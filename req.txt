@@ -1,1 +1,3 @@
-time, requests, yt-dlp, youtube-search, flask, requests, jsonify
+pip install time requests yt-dlp youtube-search flask requests jsonify
+
+YT_KEY = 'AIzaSyBYLp4uoljYAlGRGj_E_OJ8mNw_gHOr2yQ'
