@@ -14,7 +14,7 @@ db = DB()
 def add_song():
     song = request.json.get('song')
     db.add_song(song)
-    return jsonify({'message': 'Song added to queue'})
+    return jsonify({'message': 'Musica adicionada!'})
 
 @app.route('/next', methods=['GET'])
 def next_song():
@@ -24,6 +24,11 @@ def next_song():
 @app.route('/pop', methods=['POST'])
 def pop_song():
     db.pop_next_song()
-    return jsonify({'message': 'Song removed from queue'})
+    return jsonify({'message': 'Musica removida!'})
+
+@app.route('/queue', methods=['GET'])
+def get_queue():
+    queue = db.get_all_songs()
+    return jsonify({'queue': queue})
 
 app.run(host='0.0.0.0', port=5001)

@@ -14,3 +14,6 @@ class DB:
         if self.queue:
             return self.queue.pop(0)
         return None
+    
+    def get_all_songs(self):
+        return self.queue

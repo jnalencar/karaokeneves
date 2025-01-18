@@ -1,3 +1,1 @@
-pip install time requests yt-dlp youtube-search flask requests jsonify selenium webdriver-manager pyautogui python-dotenv
-
-YT_KEY = 'AIzaSyBYLp4uoljYAlGRGj_E_OJ8mNw_gHOr2yQ'
+pip install time requests yt-dlp youtube-search flask requests jsonify selenium webdriver-manager pyautogui python-dotenv flask-socketio
