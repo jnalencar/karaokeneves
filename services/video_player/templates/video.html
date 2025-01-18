@@ -13,53 +13,97 @@
             align-items: center;
             background-color: black;
         }
-        .plyr__video-embed {
+        .video-container {
             width: 100%;
             height: 100%;
+            position: relative;
         }
         iframe {
             width: 100%;
             height: 100%;
             border: none;
         }
+        .unmute-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 10;
+        }
     </style>
-    <!-- Plyr CSS -->
-    <link rel="stylesheet" href="https://cdn.plyr.io/3.6.8/plyr.css" />
 </head>
 <body>
-    <div class="plyr__video-embed" id="player">
-        <iframe
-            id="youtube-iframe"
-            src="https://www.youtube.com/embed/{{ video_id }}?autoplay=1&controls=0&fs=1"
-            allowfullscreen
-            allowtransparency
-            allow="autoplay"
-        ></iframe>
-    </div>
-    <!-- Plyr JS -->
-    <script src="https://cdn.plyr.io/3.6.8/plyr.polyfilled.js"></script>
+    <div class="video-container" id="player"></div>
+    <div class="unmute-overlay" id="unmute-overlay">Tap to unmute</div>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const player = new Plyr('#player', {
-                autoplay: true,
-                controls: [],
-            });
+        // Load the IFrame Player API code asynchronously.
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
-            // Enter fullscreen mode
-            const iframe = document.getElementById('youtube-iframe');
-            if (iframe.requestFullscreen) {
-                iframe.requestFullscreen();
-            } else if (iframe.mozRequestFullScreen) { // Firefox
-                iframe.mozRequestFullScreen();
-            } else if (iframe.webkitRequestFullscreen) { // Chrome, Safari and Opera
-                iframe.webkitRequestFullscreen();
-            } else if (iframe.msRequestFullscreen) { // IE/Edge
-                iframe.msRequestFullscreen();
+        // Create an <iframe> (and YouTube player) after the API code downloads.
+        var player;
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '100%',
+                width: '100%',
+                videoId: '{{ video_id }}',
+                playerVars: {
+                    'autoplay': 1,
+                    'controls': 0,
+                    'fs': 1,
+                    'rel': 0,
+                    'mute': 1,
+                    'showinfo': 0,
+                    'modestbranding': 1
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        // The API will call this function when the video player is ready.
+        function onPlayerReady(event) {
+            event.target.playVideo();
+            // Simulate a click on the unmute overlay to unmute the video
+            setTimeout(() => {
+                const unmuteOverlay = document.getElementById('unmute-overlay');
+                unmuteOverlay.click();
+            }, 5000); // Wait for 1 second before simulating the click
+        }
+
+        // The API calls this function when the player's state changes.
+        function onPlayerStateChange(event) {
+            if (event.data == YT.PlayerState.ENDED) {
+                window.close();
+            }
+        }
+
+        // Request fullscreen mode
+        document.addEventListener('DOMContentLoaded', () => {
+            const iframe = document.getElementById('player');
+            const requestFullscreen = iframe.requestFullscreen || iframe.mozRequestFullScreen || iframe.webkitRequestFullscreen || iframe.msRequestFullscreen;
+            if (requestFullscreen) {
+                requestFullscreen.call(iframe);
             }
 
-            // Detect video end
-            player.on('ended', () => {
-                window.close();
+            // Unmute the video on user interaction
+            const unmuteOverlay = document.getElementById('unmute-overlay');
+            unmuteOverlay.addEventListener('click', () => {
+                player.unMute();
+                player.setVolume(100); // Set volume to max
+                unmuteOverlay.style.display = 'none'; // Hide the overlay
             });
         });
     </script>

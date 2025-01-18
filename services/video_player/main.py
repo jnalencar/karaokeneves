@@ -5,8 +5,19 @@ from flask import Flask, render_template
 from youtube_search import YoutubeSearch
 import yt_dlp as youtube_dl
 import os
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from webdriver_manager.chrome import ChromeDriverManager
+import pyautogui
+from dotenv import load_dotenv
 
-YOUTUBE_API_KEY = 'AIzaSyBYLp4uoljYAlGRGj_E_OJ8mNw_gHOr2yQ'
+# Load environment variables from .env file
+load_dotenv()
+
+YOUTUBE_API_KEY = os.getenv('YOUTUBE_API_KEY')
 
 app = Flask(__name__)
 
@@ -42,7 +53,7 @@ def search_and_play_song():
                     video = result
                     break
             if not video_url:
-                video_id = results[0]['id']
+                video_id = results[0].get('id')
                 video_url = f"https://www.youtube.com/embed/{video_id}?autoplay=1&fs=1"
             print(video.get('title'))
             print(video_url)
@@ -54,15 +65,34 @@ def search_and_play_song():
                 video_duration = info_dict.get('duration', 300)  # Default to 5 minutes if duration is not available
             print(f"Video duration: {video_duration} seconds")
             
-            # Open the video in a web browser
-            webbrowser.open(video_url)
+            # Open the video in a web browser using selenium
+            driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
+            driver.get(video_url)
+
+            # Wait for the unmute overlay to appear and click on it
+            try:
+                unmute_overlay = WebDriverWait(driver, 10).until(
+                    EC.element_to_be_clickable((By.ID, 'unmute-overlay'))
+                )
+                location = unmute_overlay.location
+                size = unmute_overlay.size
+                center_x = location['x'] + size['width'] / 2
+                center_y = location['y'] + size['height'] / 2
+                pyautogui.click(center_x, center_y)
+                pyautogui.move(-30, 0)
+                pyautogui.press('f11')
+            except Exception as e:
+                print(f"Error clicking unmute overlay: {e}")
             
             # Remove the song from the queue after playing
             requests.post('http://localhost:5001/pop')
             
             # Sleep for the duration of the video
             time.sleep(video_duration)
-        
+
+            # Close the browser
+            driver.quit()
+
         time.sleep(10)
 
 if __name__ == '__main__':
