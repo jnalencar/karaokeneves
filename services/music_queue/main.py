@@ -38,9 +38,7 @@ def current_song():
 
 @app.route('/delete', methods=['POST'])
 def delete_song():
-    print(f"Request: {request.json}")
     pos = request.json.get('pos')
-    print(f"Tentou deletar a musica na pos: {pos}")
     db.delete_song(pos)
     return jsonify({'message': 'Musica removida!'})
 
