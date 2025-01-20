@@ -27,5 +27,16 @@ def handle_get_queue():
     except requests.exceptions.JSONDecodeError as e:
         print(f"JSON decode error: {e}")
 
+@socketio.on('get_current_song')
+def handle_get_current_song():
+    response = requests.get('http://localhost:5001/current')
+    print(f"Response status code: {response.status_code}")
+    print(f"Response content: {response.content}")
+    try:
+        current_song = response.json().get('current_song', 'Nenhuma música tocando')
+        emit('current_song', {'current_song': current_song})
+    except requests.exceptions.JSONDecodeError as e:
+        print(f"JSON decode error: {e}")
+
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000)

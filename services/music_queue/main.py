@@ -31,4 +31,10 @@ def get_queue():
     queue = db.get_all_songs()
     return jsonify({'queue': queue})
 
-app.run(host='0.0.0.0', port=5001)
+@app.route('/current', methods=['GET'])
+def current_song():
+    song = db.get_current_song()
+    return jsonify({'current_song': song})
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5001)
