@@ -4,14 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Web Interface</title>
-    <link rel="stylesheet" href="styles/index.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/index.css') }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 </head>
 <body>
     <div class="current-song-container">
         <div id="current-song">
             <h3>Música atual</h3>
-            <p id="current-song-name">Carregando...</p>
+            <p id="current-song-name">
+                <img src="{{ url_for('static', filename='assets/loading-gif.gif') }}" alt="Loading...">
+            </p>
         </div>
     </div>
     <div class="container">
@@ -26,6 +28,6 @@
         </div>
     </div>
 
-    <script src="scripts/index.js"></script>
+    <script src="{{ url_for('static', filename='scripts/index.js') }}"></script>
 </body>
 </html>

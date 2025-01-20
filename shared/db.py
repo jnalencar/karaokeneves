@@ -22,3 +22,7 @@ class DB:
     
     def get_current_song(self):
         return self.current_song
+    
+    def delete_song(self, pos):
+        if 0 <= pos < len(self.queue):
+            self.queue.pop(pos)

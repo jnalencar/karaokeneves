@@ -2,7 +2,7 @@ from flask import Flask, request, render_template
 import requests
 from flask_socketio import SocketIO, emit
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='templates')
 socketio = SocketIO(app)
 
 @app.route('/')
@@ -37,6 +37,13 @@ def handle_get_current_song():
         emit('current_song', {'current_song': current_song})
     except requests.exceptions.JSONDecodeError as e:
         print(f"JSON decode error: {e}")
+
+@socketio.on('delete_song')
+def handle_delete_song(data):
+    pos = data.get('pos')
+    if pos is not None:
+        response = requests.post('http://localhost:5001/delete', json={'pos': pos})
+        emit('song_deleted', {'message': 'Musica removida!'})
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000)
