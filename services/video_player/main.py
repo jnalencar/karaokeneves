@@ -13,17 +13,32 @@ from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 import pyautogui
 from dotenv import load_dotenv
+from flask_cors import CORS
+from threading import Event, Thread
 
-# Load environment variables from .env file
 load_dotenv()
 
 YOUTUBE_API_KEY = os.getenv('YOUTUBE_API_KEY')
 
 app = Flask(__name__)
+CORS(app)
+
+driver = None
+skip_event = Event()
+
 
 @app.route('/play/<video_id>')
 def play_video(video_id):
     return render_template('video.html', video_id=video_id)
+
+@app.route('/skip', methods=['POST'])
+def skip():
+    global driver
+    if driver is not None:
+        driver.quit()
+    requests.post('http://localhost:5001/skip')
+    skip_event.set()
+    return 'Skipped', 200
 
 def is_video_embeddable(video_id):
     url = f'https://www.googleapis.com/youtube/v3/videos?part=status&id={video_id}&key={YOUTUBE_API_KEY}'
@@ -35,6 +50,7 @@ def is_video_embeddable(video_id):
     return False
 
 def search_and_play_song():
+    global driver
     while True:
         response = requests.get('http://localhost:5001/next')
         song = response.json().get('song')
@@ -42,7 +58,7 @@ def search_and_play_song():
         if song:
             search_query = f"{song} karaoke"
             print(search_query)
-            
+
             # Search for the video on YouTube
             results = YoutubeSearch(search_query, max_results=5).to_dict()
             video_url = None
@@ -57,19 +73,16 @@ def search_and_play_song():
                 video_url = f"https://www.youtube.com/embed/{video_id}?autoplay=1&fs=1"
             print(video.get('title'))
             print(video_url)
-            
-            # Get video duration using yt-dlp
+
+            # Get the duration of the video
             ydl_opts = {}
             with youtube_dl.YoutubeDL(ydl_opts) as ydl:
                 info_dict = ydl.extract_info(f"https://www.youtube.com/watch?v={video_id}", download=False)
                 video_duration = info_dict.get('duration', 300)  # Default to 5 minutes if duration is not available
             print(f"Video duration: {video_duration} seconds")
             
-            # Open the video in a web browser using selenium
             driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
             driver.get(video_url)
-
-            # Wait for the unmute overlay to appear and click on it
             try:
                 unmute_overlay = WebDriverWait(driver, 10).until(
                     EC.element_to_be_clickable((By.ID, 'unmute-overlay'))
@@ -88,14 +101,16 @@ def search_and_play_song():
             requests.post('http://localhost:5001/pop')
             
             # Sleep for the duration of the video
-            time.sleep(video_duration)
+            skip_event.wait(video_duration)
+            skip_event.clear()
 
             # Close the browser
             driver.quit()
 
         time.sleep(10)
 
+
+
 if __name__ == '__main__':
-    from threading import Thread
     Thread(target=search_and_play_song).start()
     app.run(host='0.0.0.0', port=5002)

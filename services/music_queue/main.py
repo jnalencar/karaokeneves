@@ -1,13 +1,14 @@
 import sys
 import os
 
-# Add the parent directory of 'shared' to the sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
-
 from shared.db import DB
+
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 db = DB()
 
 @app.route('/add', methods=['POST'])
@@ -41,6 +42,10 @@ def delete_song():
     pos = request.json.get('pos')
     db.delete_song(pos)
     return jsonify({'message': 'Musica removida!'})
+
+@app.route('/skip', methods=['POST'])
+def skip_song():
+    return jsonify({'message': 'Musica pulada!'})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001)

@@ -11,9 +11,14 @@
     <div class="current-song-container">
         <div id="current-song">
             <h3>Música atual</h3>
-            <p id="current-song-name">
-                <img src="{{ url_for('static', filename='assets/loading-gif.gif') }}" alt="Loading...">
-            </p>
+            <div id = "current-song-info">
+                <p id="current-song-name">
+                    <img src="{{ url_for('static', filename='assets/loading-gif.gif') }}" alt="Loading...">
+                </p>
+                <p id="skip-button" style="display: none;">
+                    <img src="{{ url_for('static', filename='assets/skipbutton.png') }}" alt="Pular música">
+                </p>
+            </div>
         </div>
     </div>
     <div class="container">
