@@ -1,1 +1,12 @@
-pip install time requests yt-dlp youtube-search flask requests jsonify selenium webdriver-manager pyautogui python-dotenv flask-socketio flask-cors
+requests
+yt-dlp
+youtube-search
+flask
+requests
+jsonify
+selenium
+webdriver-manager
+pyautogui
+python-dotenv
+flask-socketio
+flask-cors
