@@ -6,9 +6,12 @@ from shared.db import DB
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from flask_socketio import SocketIO, emit
+import requests
 
 app = Flask(__name__)
 CORS(app)
+socketio = SocketIO(app)
 db = DB()
 
 @app.route('/add', methods=['POST'])
@@ -45,7 +48,9 @@ def delete_song():
 
 @app.route('/skip', methods=['POST'])
 def skip_song():
-    return jsonify({'message': 'Musica pulada!'})
+    print('Requesting skip...')
+    response = requests.post('http://localhost:5002/skip')
+    return jsonify({'message': 'Musica pulada!', 'response': response.text})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001)

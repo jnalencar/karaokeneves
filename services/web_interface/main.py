@@ -45,5 +45,11 @@ def handle_delete_song(data):
         response = requests.post('http://localhost:5001/delete', json={'pos': pos})
         emit('song_deleted', {'message': 'Musica removida!'})
 
+@socketio.on('skip')
+def handle_skip():
+    print('Skipping song...')
+    requests.post('http://localhost:5001/skip')
+    emit('song_skipped', {'message': 'Musica pulada!'})
+
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000)

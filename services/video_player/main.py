@@ -33,10 +33,10 @@ def play_video(video_id):
 
 @app.route('/skip', methods=['POST'])
 def skip():
+    print('Skip requested')
     global driver
     if driver is not None:
         driver.quit()
-    requests.post('http://localhost:5001/skip')
     skip_event.set()
     return 'Skipped', 200
 

@@ -12,14 +12,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const skipButton = document.getElementById('skip-button');
     if (skipButton) {
+        let skipTimeout;
         const skipHandler = function () {
-            fetch('http://localhost:5002/skip', { method: 'POST' })
-                .then(response => response.text())
-                .then(data => {
-                    console.log(data);
-                    socket.emit('get_queue');
-                    socket.emit('get_current_song');
-                });
+            if (skipTimeout) return; // Prevent multiple clicks
+
+            socket.emit('skip');
+            skipButton.disabled = true; // Disable the button
+            skipTimeout = setTimeout(() => {
+                skipButton.disabled = false; // Re-enable the button after 1 second
+                skipTimeout = null;
+            }, 1500);
         };
         skipButton.addEventListener('click', skipHandler);
         skipButton.addEventListener('touchstart', skipHandler);
