@@ -49,7 +49,9 @@ def start_flask_app():
 def start_selenium():
     options = webdriver.ChromeOptions()
     options.add_argument('--start-fullscreen')
-    driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    driver = webdriver.Chrome(service=ChromeService('/usr/lib/chromium-browser/chromedriver'), options=options)
     time.sleep(2)  # Wait for the Flask server to start
     driver.get('http://localhost:5003')
 
