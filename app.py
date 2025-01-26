@@ -9,7 +9,8 @@ if __name__ == '__main__':
     services = [
         ('web_interface', 'main.py'),
         ('music_queue', 'main.py'),
-        ('video_player', 'main.py')
+        ('video_player', 'main.py'),
+        ('entry_screen', 'main.py')
     ]
 
     processes = []
