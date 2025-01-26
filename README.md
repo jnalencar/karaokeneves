@@ -1,6 +1,6 @@
 # Karaoke Neves
 
-Karaoke Neves is a web-based karaoke system that allows users to add songs to a queue, play them using a video player, and skip songs. The system is composed of three main services: `web_interface`, `music_queue`, and `video_player`.
+Karaoke Neves is a web-based karaoke system that allows users to add songs to a queue, play them using a video player, and skip songs. The system is composed of four main services: `entry_screen`, `web_interface`, `music_queue`, and `video_player`.
 
 ## Requirements
 
@@ -25,6 +25,12 @@ pip install -r req.txt
 app.py
 req.txt
 services/
+    entry_screen/
+        static/
+            qrcode.png
+        templates/
+            entry.html
+        main.py
     music_queue/
         main.py
     video_player/
@@ -57,9 +63,13 @@ To run all the services, execute the app.py script:
 python app.py
 ```
 
-This will start the `web_interface`, `music_queue`, and `video_player` services.
+This will start the `entry_screen`, `web_interface`, `music_queue`, and `video_player` services.
 
 ## Endpoints
+
+### Entry Screen
+
+#### GET /: Renders the QRCode to redirect the user to the web interface.
 
 ### Web Interface
 
@@ -119,6 +129,7 @@ This will start the `web_interface`, `music_queue`, and `video_player` services.
 - Emits: `song_skipped` with message `{ "message": "Musica pulada!" }`
 
 ### Music Queue
+
 #### skip: Handles the skip event and calls the video player to skip the current song.
 - Emits: `song_skipped` with message `{ "message": "Musica pulada!", "response": "Skipped" }`
 
@@ -126,6 +137,9 @@ This will start the `web_interface`, `music_queue`, and `video_player` services.
 1. Web Interface: The user interacts with the web interface to add songs to the queue, view the current song, and skip songs.
 2. Music Queue: The `music_queue` service manages the song queue and handles requests to add, delete, and skip songs.
 3. Video Player: The `video_player` service plays the songs from the queue using a YouTube video player. It handles requests to play and skip videos.
+4. Entry Screen: The screen that the user see when the app is started, it has a QRCode to redirect the user to the web intercafe to interact with the system.
+
+When the user start the app, the first screen to open is the `entry_screen`, it is a QRCode to simplify the user to access the `web_interface` with a direct link to its IP and Port.
 
 When the user adds a song, the `web_interface` emits an add_song event, which is handled by the `music_queue` service. The song is added to the queue, and the `song_added` event is emitted back to the `web_interface`.
 
