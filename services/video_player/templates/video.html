@@ -76,11 +76,7 @@
         // The API will call this function when the video player is ready.
         function onPlayerReady(event) {
             event.target.playVideo();
-            // Simulate a click on the unmute overlay to unmute the video
-            setTimeout(() => {
-                const unmuteOverlay = document.getElementById('unmute-overlay');
-                unmuteOverlay.click();
-            }, 5000); // Wait for 1 second before simulating the click
+            event.target.setPlaybackQuality('large')
         }
 
         // The API calls this function when the player's state changes.
