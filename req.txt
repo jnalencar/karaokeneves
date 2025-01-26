@@ -10,3 +10,4 @@ pyautogui
 python-dotenv
 flask-socketio
 flask-cors
+qrcode[pil]
