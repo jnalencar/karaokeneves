@@ -81,7 +81,12 @@ def search_and_play_song():
                 video_duration = info_dict.get('duration', 300)  # Default to 5 minutes if duration is not available
             print(f"Video duration: {video_duration} seconds")
             
-            driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
+            # Update the WebDriver configuration to use Chromium
+            options = webdriver.ChromeOptions()
+            options.add_argument('--no-sandbox')
+            options.add_argument('--disable-dev-shm-usage')
+
+            driver = webdriver.Chrome(service=ChromeService('/usr/lib/chromium-browser/chromedriver'), options=options)
             driver.get(video_url)
             try:
                 unmute_overlay = WebDriverWait(driver, 10).until(
