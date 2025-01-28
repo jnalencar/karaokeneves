@@ -6,13 +6,13 @@ while ! ping -c 1 -q google.com &>/dev/null; do
 	sleep 5
 done
 
-echo"Conexão estabelecida."
+echo "Conexão estabelecida."
 echo
-echo"Buscando atualizações."
+echo "Buscando atualizações."
 cd ~/Desktop/Karaoke/karaokeneves
 git pull
 
 echo
-echo"Iniciando programa..."
+echo "Iniciando programa..."
 source venv/bin/activate
 python3 app.py
