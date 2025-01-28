@@ -1,6 +1,8 @@
 from flask import Flask, request, render_template
 import requests
 from flask_socketio import SocketIO, emit
+import os
+import subprocess
 
 app = Flask(__name__, static_folder='templates')
 socketio = SocketIO(app)
@@ -50,6 +52,12 @@ def handle_skip():
     print('Skipping song...')
     requests.post('http://localhost:5001/skip')
     emit('song_skipped', {'message': 'Musica pulada!'})
+
+@socketio.on('shutdown')
+def handle_shutdown():
+    emit('shutdown_ack', {'message': 'Shutting down...'})
+    # Run the shutdown command
+    subprocess.call(['sudo', 'shutdown', 'now'])
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000)

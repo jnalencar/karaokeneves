@@ -83,8 +83,8 @@ def search_and_play_song():
             
             #driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
             options = webdriver.ChromeOptions()
-            options.add_argument('--no-sandbox')
             options.add_argument('--disable-dev-shm-usage')
+            options.add_argument('--start-fullscreen')
 
             driver = webdriver.Chrome(service=ChromeService('/usr/lib/chromium-browser/chromedriver'), options = options)
             driver.get(video_url)
@@ -94,11 +94,11 @@ def search_and_play_song():
                 )
                 location = unmute_overlay.location
                 size = unmute_overlay.size
-                center_x = location['x'] + size['width'] / 2
-                center_y = location['y'] + size['height'] / 2
+                screen_width, screen_height = pyautogui.size()
+                center_x = screen_width / 2
+                center_y = screen_height / 2
                 pyautogui.click(center_x, center_y)
                 pyautogui.move(-30, 0)
-                pyautogui.press('f11')
             except Exception as e:
                 print(f"Error clicking unmute overlay: {e}")
             

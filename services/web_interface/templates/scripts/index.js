@@ -10,6 +10,17 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    const shutdownButton = document.getElementById('shutdown-button');
+    if (shutdownButton) {
+        shutdownButton.addEventListener('click', function () {
+            socket.emit('shutdown');
+        });
+    }
+
+    socket.on('shutdown_ack', function (data) {
+        alert(data.message);
+    });
+
     const skipButton = document.getElementById('skip-button');
     if (skipButton) {
         let skipTimeout;
