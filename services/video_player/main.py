@@ -98,7 +98,7 @@ def search_and_play_song():
                 center_x = screen_width / 2
                 center_y = screen_height / 2
                 pyautogui.click(center_x, center_y)
-                pyautogui.move(-30, 0)
+                pyautogui.move(-center_x+1, 0)
             except Exception as e:
                 print(f"Error clicking unmute overlay: {e}")
             
