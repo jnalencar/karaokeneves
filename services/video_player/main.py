@@ -86,7 +86,7 @@ def search_and_play_song():
             options.add_argument('--disable-dev-shm-usage')
             options.add_argument('--start-fullscreen')
 
-            driver = webdriver.Chrome(service=ChromeService('/usr/lib/chromium-browser/chromedriver'), options = options)
+            driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
             driver.get(video_url)
             try:
                 unmute_overlay = WebDriverWait(driver, 10).until(

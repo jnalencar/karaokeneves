@@ -9,7 +9,7 @@ done
 echo "Conexão estabelecida."
 echo
 echo "Buscando atualizações."
-cd ~/Desktop/Karaoke/karaokeneves
+cd Desktop/karaoke/karaokeneves
 git pull
 
 echo
