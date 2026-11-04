@@ -2,6 +2,8 @@ var player;
 var overlay;
 var nextSongBadge;
 var nextSongTitle;
+var nextSongRequester;
+var nextSongRequesterName;
 window.karaokePlayerReady = false;
 
 var tag = document.createElement('script');
@@ -45,6 +47,8 @@ document.addEventListener('DOMContentLoaded', function () {
     overlay = document.getElementById('unmute-overlay');
     nextSongBadge = document.getElementById('next-song');
     nextSongTitle = document.getElementById('next-song-title');
+    nextSongRequester = document.getElementById('next-song-requester');
+    nextSongRequesterName = document.getElementById('next-song-requester-name');
     overlay.addEventListener('click', function () {
         if (!player) {
             return;
@@ -75,16 +79,28 @@ function updateNextSong() {
         })
         .then(function (data) {
             if (typeof data.next_song === 'string' && data.next_song) {
-                nextSongTitle.textContent = data.next_song;
+                var separator = data.next_song.lastIndexOf(' - ');
+                if (separator > 0) {
+                    nextSongTitle.textContent = data.next_song.slice(0, separator);
+                    nextSongRequesterName.textContent =
+                        data.next_song.slice(separator + 3);
+                    nextSongRequester.hidden = !nextSongRequesterName.textContent;
+                } else {
+                    nextSongTitle.textContent = data.next_song;
+                    nextSongRequesterName.textContent = '';
+                    nextSongRequester.hidden = true;
+                }
                 nextSongBadge.hidden = false;
             } else {
                 nextSongBadge.hidden = true;
+                nextSongRequester.hidden = true;
             }
         })
         .catch(function (error) {
             console.error('Falha ao atualizar a próxima música:', error);
             nextSongTitle.textContent =
                 'Não foi possível verificar a próxima música';
+            nextSongRequester.hidden = true;
             nextSongBadge.hidden = false;
         });
 }

@@ -53,6 +53,8 @@ class PlayerEndpointTests(unittest.TestCase):
         self.assertIn(b'dQw4w9WgXcQ', response.data)
         self.assertIn(b'data-current-song=""', response.data)
         self.assertIn(b'id="next-song"', response.data)
+        self.assertIn(b'id="next-song-requester"', response.data)
+        self.assertIn(b'PEDIDO POR', response.data)
         self.assertIn(b'/templates/scripts/video.js', response.data)
         response.close()
         script = self.client.get('/templates/scripts/video.js')
