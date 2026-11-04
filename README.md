@@ -6,7 +6,8 @@ convidados usam o celular para adicionar músicas, ver a fila e pular a música.
 QR Code e vídeo compartilham uma única janela Chromium em tela cheia e modo
 quiosque para reduzir o uso de memória no Raspberry Pi. O controle para celular
 tem fila pesquisável, permite reordenar ou remover pedidos e pede confirmação
-antes de pular a música que está tocando.
+antes de pular a música que está tocando. Enquanto uma música toca, o player
+pré-busca os vídeos das músicas na fila e mostra a próxima escolha sobre o vídeo.
 
 ## Requisitos
 
@@ -70,8 +71,8 @@ Defina `KARAOKE_DB_PATH` para mudar o local do arquivo.
 - `web_interface`: oferece a interface móvel via Socket.IO.
 - `music_queue`: valida e mantém a fila e a música atual em SQLite.
 - `video_player`: busca vídeos, abre uma janela Chromium em tela cheia e modo
-  quiosque, alterna a mesma página entre QR Code e vídeo e processa término e
-  skip da música.
+  quiosque, pré-busca os vídeos da fila, alterna a mesma página entre QR Code e
+  vídeo e processa término e skip da música.
 - `app.py`: inicia e supervisiona os serviços; se um serviço falhar, encerra os
   demais. `Ctrl+C` encerra o sistema.
 

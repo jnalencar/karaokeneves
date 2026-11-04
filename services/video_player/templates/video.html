@@ -7,9 +7,13 @@
     <title>Karaokê Neves</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/video.css') }}">
 </head>
-<body data-video-id="{{ video_id }}">
+<body data-video-id="{{ video_id }}" data-current-song="{{ song }}">
     <main class="video-container">
         <div id="player"></div>
+        <aside class="next-song" id="next-song" hidden aria-live="polite">
+            <span class="next-song-label">A SEGUIR</span>
+            <span class="next-song-title" id="next-song-title"></span>
+        </aside>
         <button class="unmute-overlay" id="unmute-overlay" type="button">
             Ativar áudio
         </button>

@@ -1,5 +1,7 @@
 var player;
 var overlay;
+var nextSongBadge;
+var nextSongTitle;
 window.karaokePlayerReady = false;
 
 var tag = document.createElement('script');
@@ -41,6 +43,8 @@ function onYouTubeIframeAPIReady() {
 
 document.addEventListener('DOMContentLoaded', function () {
     overlay = document.getElementById('unmute-overlay');
+    nextSongBadge = document.getElementById('next-song');
+    nextSongTitle = document.getElementById('next-song-title');
     overlay.addEventListener('click', function () {
         if (!player) {
             return;
@@ -49,4 +53,38 @@ document.addEventListener('DOMContentLoaded', function () {
         player.setVolume(100);
         overlay.hidden = true;
     });
+
+    updateNextSong();
+    window.setInterval(updateNextSong, 4000);
 });
+
+function updateNextSong() {
+    var currentSong = document.body.dataset.currentSong;
+    if (!currentSong) {
+        return;
+    }
+
+    fetch('/next-song?current_song=' + encodeURIComponent(currentSong), {
+        cache: 'no-store'
+    })
+        .then(function (response) {
+            if (!response.ok) {
+                throw new Error('HTTP ' + response.status);
+            }
+            return response.json();
+        })
+        .then(function (data) {
+            if (typeof data.next_song === 'string' && data.next_song) {
+                nextSongTitle.textContent = data.next_song;
+                nextSongBadge.hidden = false;
+            } else {
+                nextSongBadge.hidden = true;
+            }
+        })
+        .catch(function (error) {
+            console.error('Falha ao atualizar a próxima música:', error);
+            nextSongTitle.textContent =
+                'Não foi possível verificar a próxima música';
+            nextSongBadge.hidden = false;
+        });
+}
