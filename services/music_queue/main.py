@@ -1,56 +1,94 @@
-import sys
 import os
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+import requests
+from flask import Flask, jsonify, request
+
 from shared.db import DB
 
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-from flask_socketio import SocketIO, emit
-import requests
 
 app = Flask(__name__)
-CORS(app)
-socketio = SocketIO(app)
 db = DB()
 
-@app.route('/add', methods=['POST'])
+
+@app.get('/health')
+def health():
+    return jsonify({'status': 'ok'})
+
+
+@app.post('/add')
 def add_song():
-    song = request.json.get('song')
-    db.add_song(song)
-    return jsonify({'message': 'Musica adicionada!'})
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({'error': 'Envie um objeto JSON com o campo song.'}), 400
 
-@app.route('/next', methods=['GET'])
+    try:
+        db.add_song(data.get('song'))
+    except ValueError as error:
+        return jsonify({'error': str(error)}), 400
+    return jsonify({'message': 'Música adicionada!'}), 201
+
+
+@app.get('/next')
 def next_song():
-    song = db.get_next_song()
-    return jsonify({'song': song})
+    return jsonify({'song': db.get_next_song()})
 
-@app.route('/pop', methods=['POST'])
+
+@app.post('/pop')
 def pop_song():
-    db.pop_next_song()
-    return jsonify({'message': 'Musica removida!'})
+    song = db.pop_next_song()
+    if song is None:
+        return jsonify({'error': 'A fila está vazia.'}), 404
+    return jsonify({'message': 'Música removida!', 'song': song})
 
-@app.route('/queue', methods=['GET'])
+
+@app.post('/finish')
+def finish_song():
+    db.clear_current_song()
+    return jsonify({'message': 'Reprodução finalizada.'})
+
+
+@app.get('/queue')
 def get_queue():
-    queue = db.get_all_songs()
-    return jsonify({'queue': queue})
+    return jsonify({'queue': db.get_all_songs()})
 
-@app.route('/current', methods=['GET'])
+
+@app.get('/current')
 def current_song():
-    song = db.get_current_song()
-    return jsonify({'current_song': song})
+    return jsonify({'current_song': db.get_current_song()})
 
-@app.route('/delete', methods=['POST'])
+
+@app.post('/delete')
 def delete_song():
-    pos = request.json.get('pos')
-    db.delete_song(pos)
-    return jsonify({'message': 'Musica removida!'})
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({'error': 'Envie um objeto JSON com o campo pos.'}), 400
 
-@app.route('/skip', methods=['POST'])
+    pos = data.get('pos')
+    if isinstance(pos, bool) or not isinstance(pos, int) or pos < 0:
+        return jsonify({'error': 'A posição deve ser um inteiro não negativo.'}), 400
+    if not db.delete_song(pos):
+        return jsonify({'error': 'Não existe música nessa posição.'}), 404
+    return jsonify({'message': 'Música removida!'})
+
+
+@app.post('/skip')
 def skip_song():
-    print('Requesting skip...')
-    response = requests.post('http://localhost:5002/skip')
-    return jsonify({'message': 'Musica pulada!', 'response': response.text})
+    try:
+        response = requests.post(
+            os.getenv(
+                'KARAOKE_PLAYER_URL',
+                f"http://127.0.0.1:{os.getenv('KARAOKE_PLAYER_PORT', '5002')}",
+            ) + '/skip',
+            timeout=5,
+        )
+        response.raise_for_status()
+    except requests.RequestException:
+        return jsonify({'error': 'Não foi possível comunicar com o player.'}), 502
+    return jsonify({'message': 'Música pulada!', 'response': response.text})
+
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5001)
+    app.run(
+        host=os.getenv('KARAOKE_INTERNAL_HOST', '127.0.0.1'),
+        port=int(os.getenv('KARAOKE_QUEUE_PORT', '5001')),
+    )

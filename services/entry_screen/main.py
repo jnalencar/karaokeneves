@@ -1,125 +1,106 @@
+import io
+import logging
 import os
-import qrcode
-from flask import Flask, render_template
-#from selenium import webdriver
-#from selenium.webdriver.chrome.service import Service as ChromeService
-#from webdriver_manager.chrome import ChromeDriverManager
-from threading import Thread
-import time
+import signal
 import socket
-import requests
-#import tempfile
+from threading import Thread
+
+import qrcode
+from flask import Flask, jsonify, render_template, send_file
 from playwright.sync_api import sync_playwright
+from werkzeug.serving import make_server
+
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
+ENTRY_PORT = int(os.getenv('KARAOKE_ENTRY_PORT', '5003'))
 
-@app.route('/')
+
+def get_local_ip():
+    connection = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        connection.connect(('8.8.8.8', 80))
+        return connection.getsockname()[0]
+    except OSError:
+        logger.exception('Não foi possível detectar o IP local.')
+        return '127.0.0.1'
+    finally:
+        connection.close()
+
+
+def get_control_url():
+    host = os.getenv('KARAOKE_HOST') or get_local_ip()
+    port = os.getenv('KARAOKE_CONTROL_PORT', '5000')
+    return f'http://{host}:{port}'
+
+
+@app.get('/')
 def entry_screen():
     return render_template('entry.html')
 
-def get_local_ip():
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    try:
-        # doesn't even have to be reachable
-        s.connect(('10.254.254.254', 1))
-        ip = s.getsockname()[0]
-    except Exception:
-        ip = '127.0.0.1'
-    finally:
-        s.close()
-    return ip
 
-def generate_qr_code():
-    local_ip = get_local_ip()
-    host_ip = f'http://{local_ip}:5000'
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_L,
-        box_size=10,
-        border=4,
+@app.get('/qrcode.png')
+def qr_code():
+    image = qrcode.make(get_control_url())
+    image_data = io.BytesIO()
+    image.save(image_data, format='PNG')
+    image_data.seek(0)
+    return send_file(image_data, mimetype='image/png')
+
+
+@app.get('/health')
+def health():
+    return jsonify({'status': 'ok'})
+
+
+def _handle_termination(_signum, _frame):
+    raise KeyboardInterrupt
+
+
+def main():
+    server = make_server('0.0.0.0', ENTRY_PORT, app, threaded=True)
+    server_thread = Thread(
+        target=server.serve_forever,
+        name='entry-web-server',
+        daemon=True,
     )
-    qr.add_data(host_ip)
-    qr.make(fit=True)
-    img = qr.make_image(fill='black', back_color='white')
-    img.save(os.path.join(app.static_folder, 'qrcode.png'))
+    signal.signal(signal.SIGTERM, _handle_termination)
+    server_thread.start()
 
-def start_flask_app():
-    if not os.path.exists(app.static_folder):
-        os.makedirs(app.static_folder)
-    generate_qr_code()
-    app.run(host='0.0.0.0', port=5003)
+    try:
+        with sync_playwright() as playwright:
+            launch_options = {
+                'headless': False,
+                'args': [
+                    '--kiosk',
+                    '--no-sandbox',
+                    '--disable-dev-shm-usage',
+                ],
+            }
+            executable_path = os.getenv('KARAOKE_BROWSER_EXECUTABLE')
+            if executable_path:
+                launch_options['executable_path'] = executable_path
+            browser = playwright.chromium.launch(**launch_options)
+            try:
+                page = browser.new_page()
+                page.goto(
+                    f'http://127.0.0.1:{ENTRY_PORT}',
+                    wait_until='domcontentloaded',
+                    timeout=30000,
+                )
+                while not page.is_closed():
+                    page.wait_for_timeout(500)
+            finally:
+                browser.close()
+    except KeyboardInterrupt:
+        logger.info('Encerrando tela inicial.')
+    finally:
+        server.shutdown()
+        server.server_close()
+        server_thread.join(timeout=5)
 
-def wait_for_flask():
-    while True:
-        try:
-            response = requests.get('http://localhost:5003')
-            if response.status_code == 200:
-                break
-        except requests.ConnectionError:
-            time.sleep(1)
-
-#def start_selenium():
-#    options = webdriver.ChromeOptions()
-#    options.add_argument('--start-fullscreen')
-#    options.add_argument('--disable-dev-shm-usage')
-#    options.binary_location = "/usr/bin/chromium"
-#    user_data_dir = tempfile.mkdtemp()
-#    options.add_argument(f'--user-data-dir={user_data_dir}')
-#    wait_for_flask()
-#    driver = webdriver.Chrome(service=ChromeService('/usr/bin/chromedriver'), options=options)
-#     # Wait for the Flask server to start
-#    driver.get('http://localhost:5003')
-
-def start_playwright():
-    wait_for_flask()
-    with sync_playwright() as p:
-        browser = p.chromium.launch(
-            headless=False,
-            args=[
-                "--start-fullscreen",
-                "--kiosk",
-                "--no-sandbox",
-                "--disable-infobars",
-                "--disable-features=TranslateUI",
-                "--disable-features=AutomationControlled",
-                "--disable-dev-shm-usage",
-                "--disable-background-timer-throttling",
-                "--disable-backgrounding-occluded-windows",
-                "--disable-renderer-backgrounding",
-                "--disable-extensions",
-                "--disable-gpu",
-                "--disable-software-rasterizer",
-                "--disable-default-apps",
-                "--disable-popup-blocking",
-                "--disable-notifications",
-                "--disable-translate",
-                "--disable-sync",
-                "--disable-background-networking",
-                "--disable-breakpad",
-                "--disable-client-side-phishing-detection",
-                "--disable-component-update",
-                "--disable-domain-reliability",
-                "--disable-hang-monitor",
-                "--disable-prompt-on-repost",
-                "--disable-web-resources",
-                "--disable-zero-browsers-open-for-tests",
-                "--foreground-tab"  # Tenta abrir em primeiro plano
-            ]
-        )
-        page = browser.new_page()
-        page.goto("http://localhost:5003")
-        page.wait_for_timeout(60000)
 
 if __name__ == '__main__':
-    flask_thread = Thread(target=start_flask_app)
-    flask_thread.start()
-
-    #selenium_thread = Thread(target=start_selenium)
-    #selenium_thread.start()
-
-    playwright_thread = Thread(target=start_playwright)
-    playwright_thread.start()
-
-    flask_thread.join()
-    #selenium_thread.join()
-    playwright_thread.join()
+    main()

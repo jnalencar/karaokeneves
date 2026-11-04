@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Entry Screen</title>
+    <title>Karaokê Neves</title>
     <style>
         body {
             background-color: skyblue;
@@ -29,9 +29,9 @@
 </head>
 <body>
     <div class="container">
-        <h1>Aponte a câmera do celular.</h1>
-        <img src="{{ url_for('static', filename='qrcode.png') }}" alt="QR Code">
-        <p>Escanear o QR Code acima te dará acesso aos controles do karaokê.</p>
+        <h1>Aponte a câmera do celular</h1>
+        <img src="{{ url_for('qr_code') }}" alt="QR Code para abrir os controles do karaokê">
+        <p>Escaneie o QR Code para abrir os controles do karaokê.</p>
     </div>
 </body>
 </html>
