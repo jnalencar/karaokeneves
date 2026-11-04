@@ -101,7 +101,7 @@ iframe {
 .score-overlay {
     position: absolute;
     inset: 0;
-    z-index: 8;
+    z-index: 11;
     display: grid;
     place-items: center;
     padding: 24px;
@@ -142,6 +142,14 @@ iframe {
     font-size: clamp(76px, 16vw, 142px);
     line-height: 1;
     text-shadow: 0 0 34px rgba(48, 147, 255, 0.5);
+    font-variant-numeric: tabular-nums;
+}
+
+.score-value--rolling {
+    color: #b9ddff;
+    text-shadow: 0 0 42px rgba(89, 166, 255, 0.8);
+    transform: scale(1.04);
+    transition: color 120ms ease, transform 120ms ease;
 }
 
 .score-caption,
@@ -183,8 +191,28 @@ iframe {
     overflow-wrap: anywhere;
 }
 
+.score-ranking-entry--highlight {
+    padding: 5px 8px;
+    border-radius: 6px;
+    background: rgba(54, 145, 245, 0.24);
+    color: #fff;
+    animation: leaderboard-entry 700ms ease-out both;
+}
+
 .score-next {
     margin-bottom: 0;
+}
+
+@keyframes leaderboard-entry {
+    from {
+        opacity: 0;
+        transform: translateX(-16px) scale(0.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
 }
 
 @keyframes score-arrive {

@@ -25,6 +25,8 @@ function showSongScore() {
     }
     scorePresentationStarted = true;
     scoreOverlay.hidden = false;
+    scoreOverlay.setAttribute('aria-live', 'off');
+    document.querySelector('.score-kicker').textContent = 'SORTEANDO A NOTA...';
     scoreRequester.textContent = 'Sorteando...';
     scoreValue.textContent = '...';
 
@@ -43,22 +45,59 @@ function showSongScore() {
         })
         .then(function (result) {
             scoreRequester.textContent = result.name;
-            scoreValue.textContent = result.score;
-            scoreRankingList.replaceChildren();
-            result.ranking.forEach(function (entry) {
-                var item = document.createElement('li');
-                item.textContent = entry.name + ' — ' + entry.score + ' pontos';
-                scoreRankingList.appendChild(item);
+            renderScoreRanking(result.ranking_before, '');
+            return animateScore(result.score).then(function () {
+                document.querySelector('.score-kicker').textContent =
+                    'NOTA SORTEADA!';
+                scoreOverlay.setAttribute('aria-live', 'assertive');
+                renderScoreRanking(result.ranking, result.name);
             });
         })
         .catch(function (error) {
             console.error('Falha ao sortear a nota:', error);
+            scoreOverlay.setAttribute('aria-live', 'assertive');
             scoreRequester.textContent = 'Não foi possível sortear a nota';
             scoreValue.textContent = '—';
         })
         .finally(function () {
-            window.setTimeout(finishPlayback, 8000);
+            window.setTimeout(finishPlayback, 5500);
         });
+}
+
+function animateScore(finalScore) {
+    scoreValue.classList.add('score-value--rolling');
+    return new Promise(function (resolve) {
+        var animationDuration = 2400;
+        var animationStarted = Date.now();
+        var counter = window.setInterval(function () {
+            var elapsed = Date.now() - animationStarted;
+            if (elapsed >= animationDuration) {
+                window.clearInterval(counter);
+                scoreValue.textContent = finalScore;
+                scoreValue.classList.remove('score-value--rolling');
+                resolve();
+                return;
+            }
+
+            scoreValue.textContent = Math.floor(Math.random() * 101);
+        }, 75);
+    });
+}
+
+function renderScoreRanking(ranking, highlightedName) {
+    scoreRankingList.replaceChildren();
+    ranking.forEach(function (entry) {
+        var item = document.createElement('li');
+        item.textContent = entry.name + ' — ' + entry.score + ' pontos';
+        if (
+            highlightedName &&
+            entry.name.toLocaleLowerCase('pt-BR') ===
+                highlightedName.toLocaleLowerCase('pt-BR')
+        ) {
+            item.classList.add('score-ranking-entry--highlight');
+        }
+        scoreRankingList.appendChild(item);
+    });
 }
 
 function onYouTubeIframeAPIReady() {

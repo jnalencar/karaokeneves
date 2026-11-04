@@ -69,6 +69,7 @@ class PlayerEndpointTests(unittest.TestCase):
         self.assertEqual(response.json, {
             'name': 'Ana',
             'score': 87,
+            'ranking_before': [],
             'ranking': [{'name': 'Ana', 'score': 87}],
         })
         self.assertEqual(repeated_response.json, response.json)
@@ -129,8 +130,40 @@ class PlayerEndpointTests(unittest.TestCase):
         self.assertEqual(first_response.json['ranking'], [
             {'name': 'Ana', 'score': 91},
         ])
+        self.assertEqual(first_response.json['ranking_before'], [])
+        self.assertEqual(second_response.json['ranking_before'], [
+            {'name': 'Ana', 'score': 91},
+        ])
         self.assertEqual(second_response.json['ranking'], [
             {'name': 'Ana', 'score': 91},
+        ])
+
+    def test_new_score_is_inserted_in_descending_night_ranking(self):
+        player_service.set_playback_active(
+            True,
+            'Primeira música - Ana',
+            'playback-ana',
+        )
+        with patch.object(player_service.random, 'randint', return_value=64):
+            self.client.post('/score', json={'playback_id': 'playback-ana'})
+
+        player_service.set_playback_active(
+            True,
+            'Segunda música - Bia',
+            'playback-bia',
+        )
+        with patch.object(player_service.random, 'randint', return_value=88):
+            response = self.client.post(
+                '/score',
+                json={'playback_id': 'playback-bia'},
+            )
+
+        self.assertEqual(response.json['ranking_before'], [
+            {'name': 'Ana', 'score': 64},
+        ])
+        self.assertEqual(response.json['ranking'], [
+            {'name': 'Bia', 'score': 88},
+            {'name': 'Ana', 'score': 64},
         ])
 
     def test_play_route_rejects_invalid_video_ids(self):

@@ -143,6 +143,10 @@ def score_song():
             if not requester:
                 requester = 'Convidado'
 
+            ranking_before = sorted(
+                leaderboard.values(),
+                key=lambda entry: (-entry['score'], entry['name'].casefold()),
+            )[:5]
             points = random.randint(0, 100)
             requester_key = requester.casefold()
             previous_entry = leaderboard.get(requester_key)
@@ -159,6 +163,7 @@ def score_song():
             current_playback_score = {
                 'name': requester,
                 'score': points,
+                'ranking_before': ranking_before,
                 'ranking': ranking,
             }
 
