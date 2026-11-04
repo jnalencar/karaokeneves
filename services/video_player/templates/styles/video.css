@@ -88,11 +88,12 @@ iframe {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0);
     color: white;
     font-size: 24px;
     cursor: pointer;
     z-index: 10;
     border: 0;
     font: inherit;
+    
 }
