@@ -1,24 +1,15 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-echo "Aguardando conexão com a internet..."
-echo
-while ! ping -c 1 -q google.com &>/dev/null; do
-	sleep 5
-done
+PROJECT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+PYTHON="${KARAOKE_PYTHON:-}"
 
-echo "Conexão estabelecida."
-echo
-echo "Buscando atualizações."
-cd Desktop/karaoke/karaokeneves
-git pull
+if [[ -z "$PYTHON" ]]; then
+    if [[ -x "$PROJECT_DIR/venv/bin/python" ]]; then
+        PYTHON="$PROJECT_DIR/venv/bin/python"
+    else
+        PYTHON="python3"
+    fi
+fi
 
-echo
-echo "Limpando portas..."
-for port in 5000 5001 5002 5003; do
-	fuser -k ${port}/tcp
-done
-
-echo
-echo "Iniciando programa..."
-source venv/bin/activate
-python3 app.py
+exec "$PYTHON" "$PROJECT_DIR/app.py"
