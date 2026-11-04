@@ -112,8 +112,13 @@ def skip_song():
     return jsonify({'message': 'Música pulada!', 'response': response.text})
 
 
-if __name__ == '__main__':
+def main():
+    db.clear_current_song()
     app.run(
         host=os.getenv('KARAOKE_INTERNAL_HOST', '127.0.0.1'),
         port=int(os.getenv('KARAOKE_QUEUE_PORT', '5001')),
     )
+
+
+if __name__ == '__main__':
+    main()

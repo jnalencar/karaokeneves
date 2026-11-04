@@ -68,6 +68,20 @@ class QueueApiTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIsNone(self.client.get('/current').json['current_song'])
 
+    def test_startup_clears_a_song_left_by_an_interrupted_playback(self):
+        self.client.post('/add', json={'song': 'Música anterior'})
+        self.client.post('/pop')
+        self.assertEqual(
+            self.client.get('/current').json['current_song'],
+            'Música anterior',
+        )
+
+        with patch.object(queue_service.app, 'run') as run:
+            queue_service.main()
+
+        self.assertIsNone(self.client.get('/current').json['current_song'])
+        run.assert_called_once()
+
     def test_move_reorders_songs_and_validates_positions(self):
         for song in ('Primeira', 'Segunda', 'Terceira'):
             self.client.post('/add', json={'song': song})
