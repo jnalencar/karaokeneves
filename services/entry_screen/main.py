@@ -3,11 +3,9 @@ import logging
 import os
 import signal
 import socket
-from threading import Thread
 
 import qrcode
 from flask import Flask, jsonify, render_template, send_file
-from playwright.sync_api import sync_playwright
 from werkzeug.serving import make_server
 
 
@@ -61,45 +59,14 @@ def _handle_termination(_signum, _frame):
 
 def main():
     server = make_server('0.0.0.0', ENTRY_PORT, app, threaded=True)
-    server_thread = Thread(
-        target=server.serve_forever,
-        name='entry-web-server',
-        daemon=True,
-    )
     signal.signal(signal.SIGTERM, _handle_termination)
-    server_thread.start()
-
     try:
-        with sync_playwright() as playwright:
-            launch_options = {
-                'headless': False,
-                'args': [
-                    '--kiosk',
-                    '--no-sandbox',
-                    '--disable-dev-shm-usage',
-                ],
-            }
-            executable_path = os.getenv('KARAOKE_BROWSER_EXECUTABLE')
-            if executable_path:
-                launch_options['executable_path'] = executable_path
-            browser = playwright.chromium.launch(**launch_options)
-            try:
-                page = browser.new_page()
-                page.goto(
-                    f'http://127.0.0.1:{ENTRY_PORT}',
-                    wait_until='domcontentloaded',
-                    timeout=30000,
-                )
-                while not page.is_closed():
-                    page.wait_for_timeout(500)
-            finally:
-                browser.close()
+        logger.info('Tela de espera disponível na porta %s.', ENTRY_PORT)
+        server.serve_forever()
     except KeyboardInterrupt:
         logger.info('Encerrando tela inicial.')
     finally:
-        server.shutdown()
         server.server_close()
-        server_thread.join(timeout=5)
 
 
 if __name__ == '__main__':

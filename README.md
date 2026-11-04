@@ -1,8 +1,10 @@
 # Karaokê Neves
 
-Sistema de karaokê com duas telas: a tela conectada à TV/projetor mostra o QR
-Code e reproduz os vídeos; os convidados usam o celular para adicionar músicas,
-ver a fila e pular a música atual.
+Sistema de karaokê com uma tela conectada à TV/projetor e controles para celular.
+A TV mostra o QR Code enquanto aguarda e troca para o vídeo durante a música; os
+convidados usam o celular para adicionar músicas, ver a fila e pular a música.
+QR Code e vídeo compartilham uma única janela Chromium em modo quiosque para
+reduzir o uso de memória no Raspberry Pi.
 
 ## Requisitos
 
@@ -62,12 +64,12 @@ Defina `KARAOKE_DB_PATH` para mudar o local do arquivo.
 
 ## Como funciona
 
-- `entry_screen`: abre a tela inicial em modo quiosque e gera o QR Code para os
-  controles.
+- `entry_screen`: serve a tela inicial e gera o QR Code para os controles.
 - `web_interface`: oferece a interface móvel via Socket.IO.
 - `music_queue`: valida e mantém a fila e a música atual em SQLite.
-- `video_player`: busca vídeos, abre o Chromium em modo quiosque e processa
-  término e skip da música.
+- `video_player`: busca vídeos, abre uma janela Chromium em tela cheia e modo
+  quiosque, alterna a mesma página entre QR Code e vídeo e processa término e
+  skip da música.
 - `app.py`: inicia e supervisiona os serviços; se um serviço falhar, encerra os
   demais. `Ctrl+C` encerra o sistema.
 

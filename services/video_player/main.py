@@ -73,7 +73,7 @@ def skip():
     return jsonify({'status': 'skipped'})
 
 
-def _play_song(browser, song):
+def _play_song(page, song):
     results = YoutubeSearch(f'{song} karaoke', max_results=5).to_dict()
     if not results:
         logger.warning('Nenhum resultado encontrado para: %s', song)
@@ -93,7 +93,6 @@ def _play_song(browser, song):
         logger.warning('Resultado com ID de vídeo inválido para: %s', song)
         return False
 
-    page = browser.new_page()
     song_started = False
     try:
         set_playback_active(True)
@@ -127,11 +126,18 @@ def _play_song(browser, song):
                 response.raise_for_status()
             except requests.RequestException:
                 logger.exception('Não foi possível atualizar a música atual.')
-        if not page.is_closed():
-            page.close()
+        if not shutdown_event.is_set() and not page.is_closed():
+            try:
+                page.goto(
+                    f"http://127.0.0.1:{os.getenv('KARAOKE_ENTRY_PORT', '5003')}",
+                    wait_until='domcontentloaded',
+                    timeout=10000,
+                )
+            except PlaywrightError:
+                logger.exception('Não foi possível voltar à tela do QR Code.')
 
 
-def _play_queue(browser):
+def _play_queue(page):
     while not shutdown_event.is_set():
         try:
             response = requests.get(f'{QUEUE_URL}/next', timeout=5)
@@ -152,7 +158,7 @@ def _play_queue(browser):
             continue
 
         try:
-            if not _play_song(browser, song):
+            if not _play_song(page, song):
                 shutdown_event.wait(5)
         except (requests.RequestException, URLError, ValueError):
             logger.exception('Falha ao reproduzir: %s', song)
@@ -162,24 +168,39 @@ def _play_queue(browser):
             raise
 
 
+def _launch_display(playwright):
+    launch_options = {
+        'headless': False,
+        'args': [
+            '--kiosk',
+            '--start-fullscreen',
+            '--no-first-run',
+            '--disable-infobars',
+            '--disable-dev-shm-usage',
+        ],
+    }
+    executable_path = os.getenv('KARAOKE_BROWSER_EXECUTABLE')
+    if executable_path:
+        launch_options['executable_path'] = executable_path
+
+    browser = playwright.chromium.launch(**launch_options)
+    page = browser.new_page(no_viewport=True)
+    page.goto(
+        f"http://127.0.0.1:{os.getenv('KARAOKE_ENTRY_PORT', '5003')}",
+        wait_until='domcontentloaded',
+        timeout=30000,
+    )
+    return browser, page
+
+
 def search_and_play_song():
     while not shutdown_event.is_set():
         try:
             with sync_playwright() as playwright:
-                launch_options = {
-                    'headless': False,
-                    'args': [
-                        '--kiosk',
-                        '--no-sandbox',
-                        '--disable-dev-shm-usage',
-                    ],
-                }
-                executable_path = os.getenv('KARAOKE_BROWSER_EXECUTABLE')
-                if executable_path:
-                    launch_options['executable_path'] = executable_path
-                browser = playwright.chromium.launch(**launch_options)
+                browser, page = _launch_display(playwright)
                 try:
-                    _play_queue(browser)
+                    logger.info('Tela única em modo quiosque pronta.')
+                    _play_queue(page)
                 finally:
                     browser.close()
         except PlaywrightError:

@@ -1,5 +1,6 @@
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
+from types import SimpleNamespace
 
 from services.entry_screen import main as entry_service
 from services.video_player import main as player_service
@@ -42,6 +43,53 @@ class PlayerEndpointTests(unittest.TestCase):
         script = self.client.get('/templates/scripts/video.js')
         self.assertEqual(script.status_code, 200)
         script.close()
+
+    @patch.object(player_service.requests, 'post')
+    @patch.object(player_service, 'YoutubeSearch')
+    def test_playback_reuses_display_page_and_returns_to_qr(
+        self,
+        youtube_search,
+        post,
+    ):
+        youtube_search.return_value.to_dict.return_value = [
+            {'id': 'dQw4w9WgXcQ'},
+        ]
+        post.return_value = Mock()
+        page = Mock()
+        page.is_closed.return_value = False
+
+        def finish_from_audio_activation(**_kwargs):
+            player_service.playback_finished.set()
+
+        page.locator.return_value.click.side_effect = finish_from_audio_activation
+
+        result = player_service._play_song(page, 'Minha música')
+
+        self.assertTrue(result)
+        self.assertEqual(page.goto.call_count, 2)
+        self.assertIn('/play/dQw4w9WgXcQ', page.goto.call_args_list[0].args[0])
+        self.assertTrue(page.goto.call_args_list[1].args[0].endswith(':5003'))
+        self.assertFalse(page.close.called)
+        self.assertEqual(post.call_count, 2)
+
+    def test_display_launches_single_browser_in_fullscreen_kiosk(self):
+        page = Mock()
+        browser = Mock()
+        browser.new_page.return_value = page
+        playwright = SimpleNamespace(
+            chromium=SimpleNamespace(launch=Mock(return_value=browser))
+        )
+
+        launched_browser, display_page = player_service._launch_display(playwright)
+
+        self.assertIs(launched_browser, browser)
+        self.assertIs(display_page, page)
+        options = playwright.chromium.launch.call_args.kwargs
+        self.assertFalse(options['headless'])
+        self.assertIn('--kiosk', options['args'])
+        self.assertIn('--start-fullscreen', options['args'])
+        browser.new_page.assert_called_once_with(no_viewport=True)
+        page.goto.assert_called_once()
 
 
 class EntryScreenTests(unittest.TestCase):
