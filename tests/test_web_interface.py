@@ -16,10 +16,21 @@ class WebInterfaceTests(unittest.TestCase):
             response = http_client.get('/')
             self.assertEqual(response.status_code, 200)
             self.assertIn(b'/templates/scripts/index.js', response.data)
+            self.assertIn(b'id="queue-filter"', response.data)
+            self.assertIn(b'id="skip-dialog"', response.data)
+            self.assertIn(b'id="connection-status"', response.data)
 
             script = http_client.get('/templates/scripts/index.js')
             self.assertEqual(script.status_code, 200)
+            self.assertIn(b"socket.emit('move_song'", script.data)
             script.close()
+
+            stylesheet = http_client.get(
+                '/templates/styles/index.css'
+            )
+            self.assertEqual(stylesheet.status_code, 200)
+            self.assertIn(b'prefers-reduced-motion', stylesheet.data)
+            stylesheet.close()
             response.close()
 
     @patch.object(web_service.requests, 'request')

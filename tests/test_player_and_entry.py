@@ -109,10 +109,24 @@ class EntryScreenTests(unittest.TestCase):
         self.assertTrue(response.data.startswith(b'\x89PNG'))
 
     def test_entry_page_references_the_dynamic_qr_code(self):
-        response = self.client.get('/')
+        with patch.object(
+            entry_service,
+            'get_control_url',
+            return_value='http://192.168.1.10:5000',
+        ):
+            response = self.client.get('/')
 
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'/qrcode.png', response.data)
+        self.assertIn(b'http://192.168.1.10:5000', response.data)
+        self.assertIn(b'O palco', response.data)
+
+    def test_entry_screen_styles_are_served(self):
+        response = self.client.get('/static/styles/entry.css')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'100dvh', response.data)
+        response.close()
 
 
 if __name__ == '__main__':

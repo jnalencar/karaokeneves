@@ -36,7 +36,7 @@ def get_control_url():
 
 @app.get('/')
 def entry_screen():
-    return render_template('entry.html')
+    return render_template('entry.html', control_url=get_control_url())
 
 
 @app.get('/qrcode.png')

@@ -3,8 +3,10 @@
 Sistema de karaokê com uma tela conectada à TV/projetor e controles para celular.
 A TV mostra o QR Code enquanto aguarda e troca para o vídeo durante a música; os
 convidados usam o celular para adicionar músicas, ver a fila e pular a música.
-QR Code e vídeo compartilham uma única janela Chromium em modo quiosque para
-reduzir o uso de memória no Raspberry Pi.
+QR Code e vídeo compartilham uma única janela Chromium em tela cheia e modo
+quiosque para reduzir o uso de memória no Raspberry Pi. O controle para celular
+tem fila pesquisável, permite reordenar ou remover pedidos e pede confirmação
+antes de pular a música que está tocando.
 
 ## Requisitos
 
