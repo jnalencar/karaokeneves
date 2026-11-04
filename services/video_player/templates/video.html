@@ -7,7 +7,8 @@
     <title>Karaokê Neves</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/video.css') }}">
 </head>
-<body data-video-id="{{ video_id }}" data-current-song="{{ song }}">
+<body data-video-id="{{ video_id }}" data-current-song="{{ song }}"
+      data-playback-id="{{ playback_id }}">
     <main class="video-container">
         <div id="player"></div>
         <aside class="next-song" id="next-song" hidden aria-live="polite">
@@ -20,6 +21,22 @@
         </aside>
         <button class="unmute-overlay" id="unmute-overlay" type="button">
         </button>
+        <section class="score-overlay" id="score-overlay" hidden
+                 aria-live="assertive">
+            <div class="score-card">
+                <p class="score-kicker">FIM DE MÚSICA!</p>
+                <p class="score-message">
+                    <span id="score-requester"></span>, sua nota foi:
+                </p>
+                <strong class="score-value" id="score-value"></strong>
+                <p class="score-caption">Nota aleatória da diversão · de 0 a 100</p>
+                <div class="score-ranking">
+                    <h2>Melhores da noite</h2>
+                    <ol id="score-ranking-list"></ol>
+                </div>
+                <p class="score-next">A próxima música já vai começar...</p>
+            </div>
+        </section>
     </main>
     <script src="{{ url_for('static', filename='scripts/video.js') }}"></script>
 </body>

@@ -97,3 +97,104 @@ iframe {
     font: inherit;
     
 }
+
+.score-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 8;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: rgba(0, 8, 20, 0.88);
+    color: #f2f8ff;
+    font-family: system-ui, sans-serif;
+    text-align: center;
+}
+
+.score-overlay[hidden] {
+    display: none;
+}
+
+.score-card {
+    width: min(620px, 100%);
+    animation: score-arrive 450ms ease-out both;
+}
+
+.score-kicker {
+    margin: 0;
+    color: #8fc5ff;
+    font-size: clamp(16px, 2.5vw, 24px);
+    font-weight: 800;
+    letter-spacing: 3px;
+}
+
+.score-message {
+    margin: 16px 0 0;
+    font-size: clamp(22px, 4vw, 38px);
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.score-value {
+    display: block;
+    margin-top: 4px;
+    color: #63adff;
+    font-size: clamp(76px, 16vw, 142px);
+    line-height: 1;
+    text-shadow: 0 0 34px rgba(48, 147, 255, 0.5);
+}
+
+.score-caption,
+.score-next {
+    color: #b4cbe2;
+    font-size: clamp(12px, 1.8vw, 16px);
+}
+
+.score-caption {
+    margin: 8px 0 22px;
+}
+
+.score-ranking {
+    margin: 0 auto;
+    padding: 14px 20px;
+    border: 1px solid rgba(89, 166, 255, 0.4);
+    border-radius: 14px;
+    background: rgba(3, 15, 31, 0.8);
+    text-align: left;
+}
+
+.score-ranking h2 {
+    margin: 0 0 8px;
+    color: #8fc5ff;
+    font-size: clamp(14px, 2vw, 19px);
+    text-align: center;
+}
+
+.score-ranking ol {
+    display: grid;
+    gap: 5px;
+    margin: 0;
+    padding-left: 28px;
+}
+
+.score-ranking li {
+    padding-left: 3px;
+    font-size: clamp(13px, 1.8vw, 17px);
+    overflow-wrap: anywhere;
+}
+
+.score-next {
+    margin-bottom: 0;
+}
+
+@keyframes score-arrive {
+    from {
+        opacity: 0;
+        transform: scale(0.94);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}

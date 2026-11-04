@@ -10,6 +10,8 @@ class PlayerEndpointTests(unittest.TestCase):
     def setUp(self):
         player_service.shutdown_event.clear()
         player_service.set_playback_active(False)
+        with player_service.playback_lock:
+            player_service.leaderboard.clear()
         with player_service.search_cache_lock:
             player_service.search_cache.clear()
             player_service.search_in_progress.clear()
@@ -34,12 +36,102 @@ class PlayerEndpointTests(unittest.TestCase):
         self.assertEqual(response.status_code, 409)
 
     def test_skip_finishes_the_active_playback(self):
-        player_service.set_playback_active(True)
+        player_service.set_playback_active(
+            True,
+            'Minha música - Ana',
+            'playback-skip',
+        )
 
         response = self.client.post('/skip')
 
         self.assertEqual(response.status_code, 200)
         self.assertTrue(player_service.playback_finished.is_set())
+        self.assertEqual(player_service.leaderboard, {})
+
+    def test_score_is_generated_for_the_active_playback_and_is_idempotent(self):
+        player_service.set_playback_active(
+            True,
+            'Minha música - Ana',
+            'playback-123',
+        )
+
+        with patch.object(player_service.random, 'randint', return_value=87) as draw:
+            response = self.client.post(
+                '/score',
+                json={'playback_id': 'playback-123'},
+            )
+            repeated_response = self.client.post(
+                '/score',
+                json={'playback_id': 'playback-123'},
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json, {
+            'name': 'Ana',
+            'score': 87,
+            'ranking': [{'name': 'Ana', 'score': 87}],
+        })
+        self.assertEqual(repeated_response.json, response.json)
+        draw.assert_called_once_with(0, 100)
+
+    def test_score_rejects_missing_or_stale_playback_ids(self):
+        player_service.set_playback_active(
+            True,
+            'Minha música - Ana',
+            'playback-current',
+        )
+
+        response = self.client.post(
+            '/score',
+            json={'playback_id': 'playback-stale'},
+        )
+
+        self.assertEqual(response.status_code, 409)
+
+    def test_score_uses_the_requester_after_the_last_title_separator(self):
+        player_service.set_playback_active(
+            True,
+            'Evidências - Chitãozinho & Xororó - Ana',
+            'playback-hyphenated-title',
+        )
+
+        with patch.object(player_service.random, 'randint', return_value=73):
+            response = self.client.post(
+                '/score',
+                json={'playback_id': 'playback-hyphenated-title'},
+            )
+
+        self.assertEqual(response.json['name'], 'Ana')
+
+    def test_score_updates_a_singer_only_when_the_new_score_is_higher(self):
+        player_service.set_playback_active(
+            True,
+            'Primeira música - Ana',
+            'playback-first',
+        )
+        with patch.object(player_service.random, 'randint', return_value=91):
+            first_response = self.client.post(
+                '/score',
+                json={'playback_id': 'playback-first'},
+            )
+
+        player_service.set_playback_active(
+            True,
+            'Segunda música - ana',
+            'playback-second',
+        )
+        with patch.object(player_service.random, 'randint', return_value=42):
+            second_response = self.client.post(
+                '/score',
+                json={'playback_id': 'playback-second'},
+            )
+
+        self.assertEqual(first_response.json['ranking'], [
+            {'name': 'Ana', 'score': 91},
+        ])
+        self.assertEqual(second_response.json['ranking'], [
+            {'name': 'Ana', 'score': 91},
+        ])
 
     def test_play_route_rejects_invalid_video_ids(self):
         response = self.client.get('/play/short')
@@ -55,6 +147,8 @@ class PlayerEndpointTests(unittest.TestCase):
         self.assertIn(b'id="next-song"', response.data)
         self.assertIn(b'id="next-song-requester"', response.data)
         self.assertIn(b'PEDIDO POR', response.data)
+        self.assertIn(b'id="score-overlay"', response.data)
+        self.assertIn(b'Melhores da noite', response.data)
         self.assertIn(b'/templates/scripts/video.js', response.data)
         response.close()
         script = self.client.get('/templates/scripts/video.js')
@@ -135,9 +229,12 @@ class PlayerEndpointTests(unittest.TestCase):
 
         self.assertTrue(player_service._play_song(page, 'Minha música'))
         search_results.assert_called_once_with('Minha música')
-        self.assertEqual(
-            page.goto.call_args_list[0].args[0],
-            'http://127.0.0.1:5002/play/dQw4w9WgXcQ?song=Minha+m%C3%BAsica',
+        playback_url = page.goto.call_args_list[0].args[0]
+        self.assertTrue(
+            playback_url.startswith(
+                'http://127.0.0.1:5002/play/dQw4w9WgXcQ?'
+                'song=Minha+m%C3%BAsica&playback_id='
+            )
         )
 
     @patch.object(player_service.requests, 'post')

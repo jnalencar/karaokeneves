@@ -4,6 +4,11 @@ var nextSongBadge;
 var nextSongTitle;
 var nextSongRequester;
 var nextSongRequesterName;
+var scoreOverlay;
+var scoreRequester;
+var scoreValue;
+var scoreRankingList;
+var scorePresentationStarted = false;
 window.karaokePlayerReady = false;
 
 var tag = document.createElement('script');
@@ -12,6 +17,48 @@ document.head.appendChild(tag);
 
 function finishPlayback() {
     fetch('/finished', { method: 'POST', keepalive: true });
+}
+
+function showSongScore() {
+    if (scorePresentationStarted) {
+        return;
+    }
+    scorePresentationStarted = true;
+    scoreOverlay.hidden = false;
+    scoreRequester.textContent = 'Sorteando...';
+    scoreValue.textContent = '...';
+
+    fetch('/score', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            playback_id: document.body.dataset.playbackId
+        })
+    })
+        .then(function (response) {
+            if (!response.ok) {
+                throw new Error('HTTP ' + response.status);
+            }
+            return response.json();
+        })
+        .then(function (result) {
+            scoreRequester.textContent = result.name;
+            scoreValue.textContent = result.score;
+            scoreRankingList.replaceChildren();
+            result.ranking.forEach(function (entry) {
+                var item = document.createElement('li');
+                item.textContent = entry.name + ' — ' + entry.score + ' pontos';
+                scoreRankingList.appendChild(item);
+            });
+        })
+        .catch(function (error) {
+            console.error('Falha ao sortear a nota:', error);
+            scoreRequester.textContent = 'Não foi possível sortear a nota';
+            scoreValue.textContent = '—';
+        })
+        .finally(function () {
+            window.setTimeout(finishPlayback, 8000);
+        });
 }
 
 function onYouTubeIframeAPIReady() {
@@ -35,7 +82,7 @@ function onYouTubeIframeAPIReady() {
             },
             onStateChange: function (event) {
                 if (event.data === YT.PlayerState.ENDED) {
-                    finishPlayback();
+                    showSongScore();
                 }
             },
             onError: finishPlayback
@@ -49,6 +96,10 @@ document.addEventListener('DOMContentLoaded', function () {
     nextSongTitle = document.getElementById('next-song-title');
     nextSongRequester = document.getElementById('next-song-requester');
     nextSongRequesterName = document.getElementById('next-song-requester-name');
+    scoreOverlay = document.getElementById('score-overlay');
+    scoreRequester = document.getElementById('score-requester');
+    scoreValue = document.getElementById('score-value');
+    scoreRankingList = document.getElementById('score-ranking-list');
     overlay.addEventListener('click', function () {
         if (!player) {
             return;

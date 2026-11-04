@@ -1,11 +1,13 @@
 import logging
 import os
+import random
 import re
 import signal
 from collections import OrderedDict
 from threading import Event, Lock, Thread
 from urllib.error import URLError
 from urllib.parse import urlencode
+from uuid import uuid4
 
 import requests
 from flask import Flask, jsonify, render_template, request
@@ -26,6 +28,10 @@ search_cache_lock = Lock()
 search_cache = OrderedDict()
 search_in_progress = {}
 playback_active = False
+current_playback_song = None
+current_playback_id = None
+current_playback_score = None
+leaderboard = {}
 video_id_pattern = re.compile(r'^[A-Za-z0-9_-]{11}$')
 
 QUEUE_URL = os.getenv(
@@ -35,11 +41,19 @@ QUEUE_URL = os.getenv(
 PLAYER_PORT = int(os.getenv('KARAOKE_PLAYER_PORT', '5002'))
 
 
-def set_playback_active(active):
-    global playback_active
+def set_playback_active(active, song=None, playback_id=None):
+    global playback_active, current_playback_song
+    global current_playback_id, current_playback_score
     with playback_lock:
         playback_active = active
-        if not active:
+        if active:
+            current_playback_song = song
+            current_playback_id = playback_id
+            current_playback_score = None
+        else:
+            current_playback_song = None
+            current_playback_id = None
+            current_playback_score = None
             playback_finished.clear()
 
 
@@ -61,6 +75,7 @@ def play_video(video_id):
         'video.html',
         video_id=video_id,
         song=request.args.get('song', ''),
+        playback_id=request.args.get('playback_id', ''),
     )
 
 
@@ -103,6 +118,51 @@ def finished():
             return jsonify({'error': 'Não há música em reprodução.'}), 409
         playback_finished.set()
     return jsonify({'status': 'finished'})
+
+
+@app.post('/score')
+def score_song():
+    global current_playback_score
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({'error': 'Identificador da reprodução inválido.'}), 400
+
+    playback_id = data.get('playback_id')
+    with playback_lock:
+        if (
+            not playback_active
+            or not isinstance(playback_id, str)
+            or playback_id != current_playback_id
+            or not isinstance(current_playback_song, str)
+        ):
+            return jsonify({'error': 'Não há reprodução válida para pontuar.'}), 409
+
+        if current_playback_score is None:
+            _, separator, requester = current_playback_song.rpartition(' - ')
+            requester = requester.strip() if separator else ''
+            if not requester:
+                requester = 'Convidado'
+
+            points = random.randint(0, 100)
+            requester_key = requester.casefold()
+            previous_entry = leaderboard.get(requester_key)
+            if previous_entry is None or points > previous_entry['score']:
+                leaderboard[requester_key] = {
+                    'name': requester,
+                    'score': points,
+                }
+
+            ranking = sorted(
+                leaderboard.values(),
+                key=lambda entry: (-entry['score'], entry['name'].casefold()),
+            )[:5]
+            current_playback_score = {
+                'name': requester,
+                'score': points,
+                'ranking': ranking,
+            }
+
+        return jsonify(current_playback_score)
 
 
 @app.post('/skip')
@@ -220,11 +280,12 @@ def _play_song(page, song):
         return False
 
     song_started = False
+    playback_id = uuid4().hex
     try:
-        set_playback_active(True)
+        set_playback_active(True, song, playback_id)
         page.goto(
             f'http://127.0.0.1:{PLAYER_PORT}/play/{video_id}?'
-            f'{urlencode({"song": song})}',
+            f'{urlencode({"song": song, "playback_id": playback_id})}',
             wait_until='domcontentloaded',
             timeout=30000,
         )
