@@ -12,9 +12,9 @@ load_dotenv(ROOT / '.env')
 
 SERVICES = (
     ('music_queue', 'main.py'),
-    ('video_player', 'main.py'),
     ('web_interface', 'main.py'),
     ('entry_screen', 'main.py'),
+    ('video_player', 'main.py'),
 )
 
 

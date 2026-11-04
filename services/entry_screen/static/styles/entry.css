@@ -1,0 +1,333 @@
+:root {
+    color-scheme: dark;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #080d15;
+    color: #f2f7ff;
+    --blue: #8ac5ff;
+    --muted: #a5b3c5;
+    --green: #64e0a1;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    display: grid;
+    min-width: 320px;
+    min-height: 100vh;
+    min-height: 100dvh;
+    margin: 0;
+    place-items: center;
+    overflow: hidden;
+    background:
+        radial-gradient(ellipse at 75% 48%, rgba(31, 113, 196, 0.22), transparent 44%),
+        radial-gradient(ellipse at 12% 100%, rgba(16, 57, 98, 0.2), transparent 42%),
+        #080d15;
+}
+
+.welcome-layout {
+    display: grid;
+    width: min(1120px, calc(100% - 96px));
+    grid-template-columns: minmax(0, 1fr) minmax(380px, 0.75fr);
+    align-items: center;
+    gap: clamp(48px, 8vw, 112px);
+    padding: 48px 0;
+}
+
+.welcome-copy {
+    min-width: 0;
+}
+
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    color: inherit;
+    font-size: 19px;
+    font-weight: 650;
+    letter-spacing: -0.5px;
+    text-decoration: none;
+}
+
+.brand strong {
+    color: var(--blue);
+}
+
+.brand-mark {
+    display: grid;
+    width: 43px;
+    height: 43px;
+    place-items: center;
+    border: 1px solid rgba(137, 193, 245, 0.26);
+    border-radius: 14px;
+    background: rgba(42, 122, 200, 0.15);
+    color: var(--blue);
+    font-size: 26px;
+}
+
+.eyebrow {
+    margin: 0;
+    color: #9ec9f4;
+    font-size: 11px;
+    font-weight: 750;
+    letter-spacing: 1.55px;
+}
+
+.welcome-copy > .eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: clamp(46px, 8vh, 82px);
+}
+
+.welcome-copy > .eyebrow span,
+.pulse-dot {
+    width: 9px;
+    height: 9px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 16px rgba(100, 224, 161, 0.58);
+}
+
+h1 {
+    margin: 19px 0 20px;
+    font-size: clamp(42px, 5.2vw, 70px);
+    font-weight: 760;
+    letter-spacing: -3.2px;
+    line-height: 1.05;
+}
+
+h1 span {
+    color: var(--blue);
+}
+
+.intro {
+    max-width: 520px;
+    margin: 0;
+    color: var(--muted);
+    font-size: clamp(15px, 1.4vw, 18px);
+    line-height: 1.72;
+}
+
+.manual-link {
+    display: grid;
+    gap: 7px;
+    margin-top: 35px;
+    color: #8291a4;
+    font-size: 13px;
+}
+
+.manual-link a {
+    width: fit-content;
+    color: #b9ddff;
+    font-size: 16px;
+    font-weight: 620;
+    text-decoration-color: rgba(125, 190, 250, 0.55);
+    text-underline-offset: 4px;
+}
+
+.waiting-indicator {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: clamp(42px, 8vh, 76px);
+    color: #c3d3e4;
+    font-size: 13px;
+}
+
+.pulse-dot {
+    animation: pulse 1.8s ease-out infinite;
+}
+
+@keyframes pulse {
+    70% {
+        box-shadow: 0 0 0 9px rgba(100, 224, 161, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(100, 224, 161, 0);
+    }
+}
+
+.qr-card {
+    width: 100%;
+    padding: clamp(24px, 3vw, 34px);
+    border: 1px solid rgba(177, 208, 239, 0.14);
+    border-radius: 25px;
+    background:
+        radial-gradient(ellipse at 50% 0, rgba(42, 122, 200, 0.16), transparent 58%),
+        linear-gradient(145deg, rgba(18, 30, 45, 0.98), rgba(10, 18, 29, 0.98));
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.32);
+}
+
+.qr-heading {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    margin-bottom: 20px;
+}
+
+.step-number {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    place-items: center;
+    border: 1px solid rgba(137, 193, 245, 0.24);
+    border-radius: 13px;
+    background: rgba(42, 122, 200, 0.14);
+    color: var(--blue);
+    font-size: 13px;
+    font-weight: 750;
+}
+
+.qr-heading .eyebrow {
+    color: #91abc6;
+    font-size: 9px;
+}
+
+.qr-heading h2 {
+    margin: 4px 0 0;
+    font-size: 20px;
+    letter-spacing: -0.5px;
+}
+
+.qr-frame {
+    display: grid;
+    width: 100%;
+    aspect-ratio: 1;
+    padding: clamp(14px, 2vw, 22px);
+    place-items: center;
+    border-radius: 19px;
+    background: #fff;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
+}
+
+.qr-frame img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+.qr-caption {
+    margin: 16px 0 18px;
+    color: var(--muted);
+    font-size: 12px;
+    text-align: center;
+}
+
+.qr-steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(8px, 1.5vw, 17px);
+    padding-top: 17px;
+    border-top: 1px solid rgba(177, 208, 239, 0.11);
+    color: #d9e8f7;
+    font-size: clamp(10px, 1vw, 12px);
+    font-weight: 620;
+}
+
+.qr-steps span:not(.step-arrow) {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.qr-steps b {
+    display: grid;
+    width: 20px;
+    height: 20px;
+    place-items: center;
+    border-radius: 50%;
+    background: rgba(42, 122, 200, 0.17);
+    color: var(--blue);
+    font-size: 10px;
+}
+
+.step-arrow {
+    color: #72849b;
+}
+
+@media (max-width: 720px) {
+    body {
+        overflow: auto;
+    }
+
+    .welcome-layout {
+        width: min(100% - 38px, 480px);
+        grid-template-columns: 1fr;
+        gap: 28px;
+        padding: 25px 0;
+    }
+
+    .welcome-copy > .eyebrow {
+        margin-top: 32px;
+    }
+
+    h1 {
+        margin: 14px 0;
+        font-size: clamp(38px, 10vw, 54px);
+        letter-spacing: -2px;
+    }
+
+    .intro {
+        font-size: 14px;
+    }
+
+    .manual-link {
+        margin-top: 20px;
+    }
+
+    .waiting-indicator {
+        margin-top: 24px;
+        font-size: 11px;
+    }
+
+    .qr-card {
+        width: min(100%, 380px);
+        justify-self: center;
+        padding: 19px;
+        border-radius: 21px;
+    }
+
+    .qr-frame {
+        width: min(100%, 300px);
+        justify-self: center;
+    }
+}
+
+@media (max-height: 700px) and (min-width: 721px) {
+    .welcome-layout {
+        width: min(100% - 64px, 1000px);
+        grid-template-columns: minmax(0, 1fr) minmax(320px, 0.72fr);
+        gap: 48px;
+        padding: 22px 0;
+    }
+
+    .welcome-copy > .eyebrow {
+        margin-top: 38px;
+    }
+
+    .waiting-indicator {
+        margin-top: 32px;
+    }
+
+    .qr-card {
+        padding: 20px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

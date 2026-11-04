@@ -3,35 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#080d15">
     <title>Karaokê Neves</title>
-    <style>
-        body {
-            background-color: skyblue;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            font-family: Arial, sans-serif;
-        }
-        .container {
-            text-align: center;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        img {
-            width: 200px;
-            height: 200px;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/entry.css') }}">
 </head>
 <body>
-    <div class="container">
-        <h1>Aponte a câmera do celular</h1>
-        <img src="{{ url_for('qr_code') }}" alt="QR Code para abrir os controles do karaokê">
-        <p>Escaneie o QR Code para abrir os controles do karaokê.</p>
-    </div>
+    <main class="welcome-layout">
+        <section class="welcome-copy">
+            <a class="brand" href="/" aria-label="Karaokê Neves">
+                <span class="brand-mark" aria-hidden="true">♪</span>
+                <span>Karaokê <strong>Neves</strong></span>
+            </a>
+            <p class="eyebrow"><span aria-hidden="true"></span> A FESTA JÁ VAI COMEÇAR</p>
+            <h1>O palco é seu.<br><span>Escolha a próxima música.</span></h1>
+            <p class="intro">
+                Aponte a câmera do celular para o código e peça uma música.
+                Sua escolha entra direto na fila do karaokê.
+            </p>
+            <div class="manual-link">
+                <span>Prefere digitar?</span>
+                <a href="{{ control_url }}">{{ control_url }}</a>
+            </div>
+            <div class="waiting-indicator">
+                <span class="pulse-dot" aria-hidden="true"></span>
+                Aguardando a próxima voz do karaokê
+            </div>
+        </section>
+
+        <section class="qr-card" aria-labelledby="qr-title">
+            <div class="qr-heading">
+                <span class="step-number">01</span>
+                <div>
+                    <p class="eyebrow">CONTROLE PELO CELULAR</p>
+                    <h2 id="qr-title">Entre na fila</h2>
+                </div>
+            </div>
+            <div class="qr-frame">
+                <img
+                    src="{{ url_for('qr_code') }}"
+                    alt="QR Code para abrir os controles do karaokê"
+                >
+            </div>
+            <p class="qr-caption">A câmera reconhece o código automaticamente</p>
+            <div class="qr-steps" aria-label="Como entrar na fila">
+                <span><b>1</b> Escaneie</span>
+                <span class="step-arrow" aria-hidden="true">→</span>
+                <span><b>2</b> Escolha</span>
+                <span class="step-arrow" aria-hidden="true">→</span>
+                <span><b>3</b> Cante!</span>
+            </div>
+        </section>
+    </main>
 </body>
 </html>

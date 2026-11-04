@@ -16,10 +16,25 @@ class WebInterfaceTests(unittest.TestCase):
             response = http_client.get('/')
             self.assertEqual(response.status_code, 200)
             self.assertIn(b'/templates/scripts/index.js', response.data)
+            self.assertIn(b'id="queue-filter"', response.data)
+            self.assertIn(b'id="skip-dialog"', response.data)
+            self.assertIn(b'id="connection-status"', response.data)
+            self.assertIn(b'id="requester-dialog"', response.data)
+            self.assertIn(b'id="requester-name"', response.data)
 
             script = http_client.get('/templates/scripts/index.js')
             self.assertEqual(script.status_code, 200)
+            self.assertIn(b"socket.emit('move_song'", script.data)
             script.close()
+
+            stylesheet = http_client.get(
+                '/templates/styles/index.css'
+            )
+            self.assertEqual(stylesheet.status_code, 200)
+            self.assertIn(b'prefers-reduced-motion', stylesheet.data)
+            self.assertIn(b'--blue-bright', stylesheet.data)
+            self.assertNotIn(b'--purple', stylesheet.data)
+            stylesheet.close()
             response.close()
 
     @patch.object(web_service.requests, 'request')
@@ -37,6 +52,41 @@ class WebInterfaceTests(unittest.TestCase):
             f'{web_service.QUEUE_URL}/add',
             timeout=5,
             json={'song': 'Minha música'},
+        )
+
+    @patch.object(web_service.requests, 'request')
+    def test_add_song_accepts_the_requester_tag_with_the_song(self, request):
+        response = Mock()
+        response.json.return_value = {'message': 'ok'}
+        request.return_value = response
+
+        self.client.emit(
+            'add_song',
+            {'song': 'Minha música - Ana'},
+        )
+
+        request.assert_called_once_with(
+            'POST',
+            f'{web_service.QUEUE_URL}/add',
+            timeout=5,
+            json={'song': 'Minha música - Ana'},
+        )
+
+    @patch.object(web_service.requests, 'request')
+    def test_move_song_sends_positions_to_queue_service(self, request):
+        response = Mock()
+        response.json.return_value = {'message': 'ok'}
+        request.return_value = response
+
+        self.client.emit('move_song', {'source': 2, 'target': 0})
+
+        events = self.client.get_received()
+        self.assertIn('song_moved', [event['name'] for event in events])
+        request.assert_called_once_with(
+            'POST',
+            f'{web_service.QUEUE_URL}/move',
+            timeout=5,
+            json={'source': 2, 'target': 0},
         )
 
     @patch.object(

@@ -15,6 +15,64 @@ html {
     position: relative;
 }
 
+.next-song {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 5;
+    display: grid;
+    max-width: min(420px, calc(100% - 40px));
+    gap: 9px;
+    padding: 12px 16px;
+    border: 1px solid rgba(89, 166, 255, 0.55);
+    border-radius: 12px;
+    background: rgba(3, 15, 31, 0.86);
+    color: #f2f8ff;
+    font-family: system-ui, sans-serif;
+    box-shadow: 0 8px 26px rgba(0, 0, 0, 0.35);
+}
+
+.next-song[hidden] {
+    display: none;
+}
+
+.next-song-label {
+    color: #8fc5ff;
+    font-size: 11px;
+    font-weight: 750;
+    letter-spacing: 1.3px;
+}
+
+.next-song-title {
+    overflow: hidden;
+    font-size: clamp(14px, 1.8vw, 22px);
+    font-weight: 650;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+}
+
+.next-song-requester {
+    display: grid;
+    gap: 3px;
+    padding-top: 7px;
+    border-top: 1px solid rgba(177, 208, 239, 0.18);
+}
+
+.next-song-requester[hidden] {
+    display: none;
+}
+
+.next-song-requester .next-song-label {
+    font-size: 9px;
+}
+
+.next-song-requester-name {
+    color: #b9ddff;
+    font-size: 14px;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
 iframe {
     width: 100%;
     height: 100%;
@@ -30,11 +88,141 @@ iframe {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0);
     color: white;
     font-size: 24px;
     cursor: pointer;
     z-index: 10;
     border: 0;
     font: inherit;
+    
+}
+
+.score-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 11;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: rgba(0, 8, 20, 0.88);
+    color: #f2f8ff;
+    font-family: system-ui, sans-serif;
+    text-align: center;
+}
+
+.score-overlay[hidden] {
+    display: none;
+}
+
+.score-card {
+    width: min(620px, 100%);
+    animation: score-arrive 450ms ease-out both;
+}
+
+.score-kicker {
+    margin: 0;
+    color: #8fc5ff;
+    font-size: clamp(16px, 2.5vw, 24px);
+    font-weight: 800;
+    letter-spacing: 3px;
+}
+
+.score-message {
+    margin: 16px 0 0;
+    font-size: clamp(22px, 4vw, 38px);
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.score-value {
+    display: block;
+    margin-top: 4px;
+    color: #63adff;
+    font-size: clamp(76px, 16vw, 142px);
+    line-height: 1;
+    text-shadow: 0 0 34px rgba(48, 147, 255, 0.5);
+    font-variant-numeric: tabular-nums;
+}
+
+.score-value--rolling {
+    color: #b9ddff;
+    text-shadow: 0 0 42px rgba(89, 166, 255, 0.8);
+    transform: scale(1.04);
+    transition: color 120ms ease, transform 120ms ease;
+}
+
+.score-caption,
+.score-next {
+    color: #b4cbe2;
+    font-size: clamp(12px, 1.8vw, 16px);
+}
+
+.score-caption {
+    margin: 8px 0 22px;
+}
+
+.score-ranking {
+    margin: 0 auto;
+    padding: 14px 20px;
+    border: 1px solid rgba(89, 166, 255, 0.4);
+    border-radius: 14px;
+    background: rgba(3, 15, 31, 0.8);
+    text-align: left;
+}
+
+.score-ranking h2 {
+    margin: 0 0 8px;
+    color: #8fc5ff;
+    font-size: clamp(14px, 2vw, 19px);
+    text-align: center;
+}
+
+.score-ranking ol {
+    display: grid;
+    gap: 5px;
+    margin: 0;
+    padding-left: 28px;
+}
+
+.score-ranking li {
+    padding-left: 3px;
+    font-size: clamp(13px, 1.8vw, 17px);
+    overflow-wrap: anywhere;
+}
+
+.score-ranking-entry--highlight {
+    padding: 5px 8px;
+    border-radius: 6px;
+    background: rgba(54, 145, 245, 0.24);
+    color: #fff;
+    animation: leaderboard-entry 700ms ease-out both;
+}
+
+.score-next {
+    margin-bottom: 0;
+}
+
+@keyframes leaderboard-entry {
+    from {
+        opacity: 0;
+        transform: translateX(-16px) scale(0.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+@keyframes score-arrive {
+    from {
+        opacity: 0;
+        transform: scale(0.94);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
