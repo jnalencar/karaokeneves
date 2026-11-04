@@ -19,7 +19,7 @@
 }
 
 body {
-    min-width: 320px;
+    min-width: 0;
     min-height: 100vh;
     margin: 0;
     background:
@@ -126,6 +126,22 @@ a:focus-visible {
 .connection-status[data-state="offline"] .status-dot {
     background: #fa7e87;
     box-shadow: 0 0 12px rgba(250, 126, 135, 0.4);
+}
+
+.profile-button {
+    min-height: 36px;
+    padding: 0 12px;
+    border: 1px solid rgba(89, 166, 255, 0.28);
+    border-radius: 99px;
+    background: rgba(42, 122, 200, 0.12);
+    color: #b9ddff;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.profile-button:hover {
+    background: rgba(50, 137, 220, 0.2);
 }
 
 .dashboard {
@@ -593,6 +609,40 @@ button:disabled {
     font-size: 20px;
 }
 
+.requester-dialog form {
+    display: grid;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.requester-dialog label {
+    color: #d9e8f7;
+    font-size: 13px;
+    font-weight: 650;
+}
+
+.requester-dialog input {
+    width: 100%;
+    min-height: 48px;
+    padding: 0 13px;
+    border: 1px solid var(--surface-border);
+    border-radius: 12px;
+    background: #080d15;
+    color: #f2f7ff;
+    font: inherit;
+}
+
+.requester-dialog .helper-text {
+    margin: 0 0 4px;
+}
+
+.requester-error {
+    margin: 0;
+    color: #ff9ca5;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
 .confirm-dialog p {
     margin: 0;
     color: var(--text-muted);
@@ -712,6 +762,29 @@ button:disabled {
         width: 36px;
         min-width: 36px;
         min-height: 38px;
+    }
+}
+
+@media (max-width: 430px) {
+    .topbar {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .profile-button {
+        overflow: hidden;
+        max-width: calc(100vw - 160px);
+        order: 2;
+        margin-left: auto;
+        padding: 0 9px;
+        font-size: 11px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .connection-status {
+        order: 3;
+        margin-left: auto;
     }
 }
 

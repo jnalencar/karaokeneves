@@ -4,6 +4,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('add-song-form');
     const songInput = document.getElementById('song-input');
     const submitButton = form.querySelector('button[type="submit"]');
+    const profileButton = document.getElementById('profile-button');
+    const requesterDialog = document.getElementById('requester-dialog');
+    const requesterForm = document.getElementById('requester-form');
+    const requesterInput = document.getElementById('requester-name');
+    const requesterError = document.getElementById('requester-error');
+    const songHelper = document.getElementById('song-helper');
     const skipButton = document.getElementById('skip-button');
     const skipDialog = document.getElementById('skip-dialog');
     const confirmSkipButton = document.getElementById('confirm-skip');
@@ -18,6 +24,9 @@ document.addEventListener('DOMContentLoaded', function () {
     let pendingSong;
     let songs = [];
     let skipPending = false;
+    let requesterName = '';
+    const requesterStorageKey = 'karaokeRequesterName';
+    const maxQueuedSongLength = 200;
 
     function setConnectionState(state, label) {
         connectionStatus.dataset.state = state;
@@ -32,6 +41,27 @@ document.addEventListener('DOMContentLoaded', function () {
         messageTimeout = setTimeout(function () {
             messageElement.classList.remove('is-visible');
         }, 2800);
+    }
+
+    function updateProfile() {
+        profileButton.textContent = requesterName
+            ? `Você: ${requesterName} · Alterar`
+            : 'Defina seu nome';
+        songInput.maxLength = Math.max(
+            1,
+            maxQueuedSongLength - requesterName.length - 3
+        );
+        songHelper.textContent = requesterName
+            ? `Digite a música e, se quiser, o artista. Máximo de ${songInput.maxLength} caracteres.`
+            : 'Digite o nome da música e, se quiser, o artista.';
+    }
+
+    function openRequesterDialog() {
+        requesterInput.value = requesterName;
+        if (typeof requesterDialog.showModal === 'function') {
+            requesterDialog.showModal();
+            requesterInput.focus();
+        }
     }
 
     function refreshState() {
@@ -126,6 +156,57 @@ document.addEventListener('DOMContentLoaded', function () {
         socket.emit('skip');
     }
 
+    try {
+        requesterName = (localStorage.getItem(requesterStorageKey) || '').trim();
+        if (requesterName.length > 40) {
+            requesterName = '';
+        }
+    } catch (error) {
+        requesterError.textContent =
+            'Não foi possível acessar o armazenamento deste navegador.';
+        requesterError.hidden = false;
+    }
+    updateProfile();
+    if (!requesterName) {
+        openRequesterDialog();
+    }
+
+    profileButton.addEventListener('click', openRequesterDialog);
+
+    requesterDialog.addEventListener('cancel', function (event) {
+        if (!requesterName) {
+            event.preventDefault();
+        }
+    });
+
+    requesterForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+        const name = requesterInput.value.trim();
+        if (!name || name.length > 40) {
+            requesterError.textContent =
+                'Digite um nome com até 40 caracteres.';
+            requesterError.hidden = false;
+            requesterInput.focus();
+            return;
+        }
+
+        try {
+            localStorage.setItem(requesterStorageKey, name);
+        } catch (error) {
+            requesterError.textContent =
+                'Não foi possível salvar seu nome neste dispositivo. ' +
+                'Verifique as configurações de armazenamento do navegador.';
+            requesterError.hidden = false;
+            return;
+        }
+
+        requesterName = name;
+        requesterError.hidden = true;
+        updateProfile();
+        requesterDialog.close();
+        showMessage(`Seus próximos pedidos aparecerão como ${name}.`, false);
+    });
+
     if (typeof io !== 'function') {
         setConnectionState('offline', 'Sem conexão');
         showMessage('Não foi possível carregar os controles em tempo real.', true);
@@ -137,15 +218,29 @@ document.addEventListener('DOMContentLoaded', function () {
     form.addEventListener('submit', function (event) {
         event.preventDefault();
         const song = songInput.value.trim();
+        if (!requesterName) {
+            openRequesterDialog();
+            return;
+        }
         if (!song) {
             showMessage('Digite o nome da música ou do artista.', true);
+            songInput.focus();
+            return;
+        }
+        if (song.length > songInput.maxLength) {
+            showMessage(
+                `O pedido deve ter no máximo ${songInput.maxLength} caracteres.`,
+                true
+            );
             songInput.focus();
             return;
         }
 
         pendingSong = song;
         submitButton.disabled = true;
-        socket.emit('add_song', { song: song });
+        socket.emit('add_song', {
+            song: `${song} - ${requesterName}`,
+        });
     });
 
     skipButton.addEventListener('click', function () {

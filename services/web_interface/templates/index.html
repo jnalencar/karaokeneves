@@ -20,6 +20,14 @@
                 <span class="status-dot" aria-hidden="true"></span>
                 <span id="connection-label">Conectando</span>
             </div>
+            <button
+                class="profile-button"
+                id="profile-button"
+                type="button"
+                aria-haspopup="dialog"
+            >
+                Defina seu nome
+            </button>
         </header>
 
         <main class="dashboard">
@@ -58,7 +66,6 @@
                         name="song"
                         id="song-input"
                         placeholder="Ex.: Evidências - Chitãozinho &amp; Xororó"
-                        maxlength="200"
                         autocomplete="off"
                         required
                     >
@@ -67,7 +74,9 @@
                         Adicionar à fila
                     </button>
                 </form>
-                <p class="helper-text">Digite o nome da música e, se quiser, o artista.</p>
+                <p class="helper-text" id="song-helper">
+                    Digite o nome da música e, se quiser, o artista.
+                </p>
             </section>
 
             <section class="queue-card card" aria-labelledby="queue-title">
@@ -112,6 +121,32 @@
     </div>
 
     <div class="toast" id="message" role="status" aria-live="polite"></div>
+
+    <dialog
+        class="confirm-dialog requester-dialog"
+        id="requester-dialog"
+        aria-labelledby="requester-dialog-title"
+    >
+        <div class="dialog-icon" aria-hidden="true">♪</div>
+        <h2 id="requester-dialog-title">Como devemos te chamar?</h2>
+        <p>Seu nome fica salvo neste dispositivo e aparece nos pedidos que você fizer.</p>
+        <form id="requester-form">
+            <label for="requester-name">Seu nome</label>
+            <input
+                id="requester-name"
+                name="requester"
+                type="text"
+                maxlength="40"
+                autocomplete="given-name"
+                required
+            >
+            <p class="requester-error" id="requester-error" role="alert" hidden></p>
+            <p class="helper-text">
+                Alterar o nome não muda músicas que já estão na fila.
+            </p>
+            <button class="primary-button" type="submit">Salvar meu nome</button>
+        </form>
+    </dialog>
 
     <dialog class="confirm-dialog" id="skip-dialog" aria-labelledby="skip-dialog-title">
         <div class="dialog-icon" aria-hidden="true">»</div>

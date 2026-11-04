@@ -8,6 +8,8 @@ quiosque para reduzir o uso de memória no Raspberry Pi. O controle para celular
 tem fila pesquisável, permite reordenar ou remover pedidos e pede confirmação
 antes de pular a música que está tocando. Enquanto uma música toca, o player
 pré-busca os vídeos das músicas na fila e mostra a próxima escolha sobre o vídeo.
+Na primeira visita, o controle pede um nome e o guarda no navegador do celular;
+os pedidos seguintes aparecem na fila como `música - nome`.
 
 ## Requisitos
 
