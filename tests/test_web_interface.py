@@ -30,6 +30,8 @@ class WebInterfaceTests(unittest.TestCase):
             )
             self.assertEqual(stylesheet.status_code, 200)
             self.assertIn(b'prefers-reduced-motion', stylesheet.data)
+            self.assertIn(b'--blue-bright', stylesheet.data)
+            self.assertNotIn(b'--purple', stylesheet.data)
             stylesheet.close()
             response.close()
 

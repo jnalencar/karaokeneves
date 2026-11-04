@@ -237,6 +237,8 @@ class EntryScreenTests(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'100dvh', response.data)
+        self.assertIn(b'--blue', response.data)
+        self.assertNotIn(b'--purple', response.data)
         response.close()
 
 
