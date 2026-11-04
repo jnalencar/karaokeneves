@@ -97,6 +97,31 @@ def handle_delete_song(data):
     emit('song_deleted', {'message': 'Música removida!'})
 
 
+@socketio.on('move_song')
+def handle_move_song(data):
+    source = data.get('source') if isinstance(data, dict) else None
+    target = data.get('target') if isinstance(data, dict) else None
+    positions = (source, target)
+    if any(
+        isinstance(position, bool)
+        or not isinstance(position, int)
+        or position < 0
+        for position in positions
+    ):
+        emit('song_error', {'message': 'Posição inválida na fila.'})
+        return
+    try:
+        queue_request(
+            'POST',
+            'move',
+            json={'source': source, 'target': target},
+        )
+    except (requests.RequestException, ValueError):
+        emit_service_error()
+        return
+    emit('song_moved', {'message': 'Ordem da fila atualizada!'})
+
+
 @socketio.on('skip')
 def handle_skip():
     try:

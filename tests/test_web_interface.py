@@ -39,6 +39,23 @@ class WebInterfaceTests(unittest.TestCase):
             json={'song': 'Minha música'},
         )
 
+    @patch.object(web_service.requests, 'request')
+    def test_move_song_sends_positions_to_queue_service(self, request):
+        response = Mock()
+        response.json.return_value = {'message': 'ok'}
+        request.return_value = response
+
+        self.client.emit('move_song', {'source': 2, 'target': 0})
+
+        events = self.client.get_received()
+        self.assertIn('song_moved', [event['name'] for event in events])
+        request.assert_called_once_with(
+            'POST',
+            f'{web_service.QUEUE_URL}/move',
+            timeout=5,
+            json={'source': 2, 'target': 0},
+        )
+
     @patch.object(
         web_service.requests,
         'request',

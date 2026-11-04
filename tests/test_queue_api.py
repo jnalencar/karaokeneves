@@ -68,6 +68,36 @@ class QueueApiTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIsNone(self.client.get('/current').json['current_song'])
 
+    def test_move_reorders_songs_and_validates_positions(self):
+        for song in ('Primeira', 'Segunda', 'Terceira'):
+            self.client.post('/add', json={'song': song})
+
+        response = self.client.post(
+            '/move',
+            json={'source': 2, 'target': 0},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.client.get('/queue').json['queue'], [
+            'Terceira',
+            'Primeira',
+            'Segunda',
+        ])
+        self.assertEqual(
+            self.client.post(
+                '/move',
+                json={'source': True, 'target': 0},
+            ).status_code,
+            400,
+        )
+        self.assertEqual(
+            self.client.post(
+                '/move',
+                json={'source': 9, 'target': 0},
+            ).status_code,
+            404,
+        )
+
     def test_skip_reports_player_unavailable(self):
         with patch.object(
             queue_service.requests,

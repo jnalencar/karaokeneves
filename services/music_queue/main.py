@@ -71,6 +71,31 @@ def delete_song():
     return jsonify({'message': 'Música removida!'})
 
 
+@app.post('/move')
+def move_song():
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({
+            'error': 'Envie um objeto JSON com source e target.',
+        }), 400
+
+    source = data.get('source')
+    target = data.get('target')
+    positions = (source, target)
+    if any(
+        isinstance(position, bool)
+        or not isinstance(position, int)
+        or position < 0
+        for position in positions
+    ):
+        return jsonify({
+            'error': 'As posições devem ser inteiros não negativos.',
+        }), 400
+    if not db.move_song(source, target):
+        return jsonify({'error': 'Não existe música nessa posição.'}), 404
+    return jsonify({'message': 'Fila atualizada!'})
+
+
 @app.post('/skip')
 def skip_song():
     try:
