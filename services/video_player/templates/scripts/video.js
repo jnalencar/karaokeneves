@@ -48,15 +48,15 @@ function showSongScore() {
             renderScoreRanking(result.ranking_before, '');
             return animateScore(result.score).then(function () {
                 document.querySelector('.score-kicker').textContent =
-                    'NOTA SORTEADA!';
+                    'A SUA NOTA FOI:';
                 scoreOverlay.setAttribute('aria-live', 'assertive');
                 renderScoreRanking(result.ranking, result.name);
             });
         })
         .catch(function (error) {
-            console.error('Falha ao sortear a nota:', error);
+            console.error('Falha ao dar a nota:', error);
             scoreOverlay.setAttribute('aria-live', 'assertive');
-            scoreRequester.textContent = 'Não foi possível sortear a nota';
+            scoreRequester.textContent = 'Não foi possível dar a nota';
             scoreValue.textContent = '—';
         })
         .finally(function () {

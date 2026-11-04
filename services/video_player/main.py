@@ -180,7 +180,7 @@ def skip():
 
 
 def _search_youtube_video_id(song):
-    results = YoutubeSearch(f'{song} karaoke', max_results=5).to_dict()
+    results = YoutubeSearch(f'{song} karaoke', max_results=10).to_dict()
     if not isinstance(results, list):
         raise ValueError('Resposta inválida da busca do YouTube.')
     return next(
