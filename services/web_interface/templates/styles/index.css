@@ -85,6 +85,10 @@ button:hover {
     justify-content: space-between;
 }
 
+#queue li button {
+    width: auto;
+}
+
 #current-song-name img {
     width: 20px;
     height: 20px;
@@ -94,4 +98,13 @@ button:hover {
     cursor: pointer;
     width: 20px;
     height: 20px;
+}
+
+#skip-button {
+    width: auto;
+    background: transparent;
+}
+
+#message.error {
+    background-color: #9c1c1c;
 }

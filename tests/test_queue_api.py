@@ -1,3 +1,4 @@
+import atexit
 import os
 import tempfile
 import unittest
@@ -6,6 +7,7 @@ from unittest.mock import patch
 
 
 _test_storage = tempfile.TemporaryDirectory()
+atexit.register(_test_storage.cleanup)
 _previous_database_path = os.environ.get('KARAOKE_DB_PATH')
 os.environ['KARAOKE_DB_PATH'] = str(
     Path(_test_storage.name) / 'imported.sqlite3'
@@ -56,6 +58,15 @@ class QueueApiTests(unittest.TestCase):
             self.client.post('/delete', json={'pos': 3}).status_code,
             404,
         )
+
+    def test_finish_clears_the_current_song(self):
+        self.client.post('/add', json={'song': 'Minha música'})
+        self.client.post('/pop')
+
+        response = self.client.post('/finish')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNone(self.client.get('/current').json['current_song'])
 
     def test_skip_reports_player_unavailable(self):
         with patch.object(

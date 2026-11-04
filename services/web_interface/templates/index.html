@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,18 +13,18 @@
             <h3>Música atual</h3>
             <div id = "current-song-info">
                 <p id="current-song-name">
-                    <img src="{{ url_for('static', filename='assets/loading-gif.gif') }}" alt="Loading...">
+                    <img src="{{ url_for('static', filename='assets/loading-gif.gif') }}" alt="Carregando">
                 </p>
-                <p id="skip-button" style="display: none;">
-                    <img src="{{ url_for('static', filename='assets/skipbutton.png') }}" alt="Pular música">
-                </p>
+                <button id="skip-button" type="button" aria-label="Pular música" style="display: none;">
+                    <img src="{{ url_for('static', filename='assets/skipbutton.png') }}" alt="">
+                </button>
             </div>
         </div>
     </div>
     <div class="container">
         <form id="add-song-form">
-            <input type="text" name="song" id="song-input" placeholder="Nome da música">
-            <button type="submit">Adicionar musica</button>
+            <input type="text" name="song" id="song-input" placeholder="Nome da música" maxlength="200" required>
+            <button type="submit">Adicionar música</button>
         </form>
         <div id="message">Música adicionada à fila</div>
         <div id="queue">

@@ -41,6 +41,12 @@ def pop_song():
     return jsonify({'message': 'Música removida!', 'song': song})
 
 
+@app.post('/finish')
+def finish_song():
+    db.clear_current_song()
+    return jsonify({'message': 'Reprodução finalizada.'})
+
+
 @app.get('/queue')
 def get_queue():
     return jsonify({'queue': db.get_all_songs()})
@@ -69,7 +75,10 @@ def delete_song():
 def skip_song():
     try:
         response = requests.post(
-            os.getenv('KARAOKE_PLAYER_URL', 'http://127.0.0.1:5002') + '/skip',
+            os.getenv(
+                'KARAOKE_PLAYER_URL',
+                f"http://127.0.0.1:{os.getenv('KARAOKE_PLAYER_PORT', '5002')}",
+            ) + '/skip',
             timeout=5,
         )
         response.raise_for_status()

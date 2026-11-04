@@ -81,6 +81,13 @@ class DB:
             ).fetchone()
             return row['value'] if row else None
 
+    def clear_current_song(self):
+        with self._lock, closing(self._connect()) as connection, connection:
+            connection.execute(
+                'DELETE FROM playback_state WHERE key = ?',
+                ('current_song',),
+            )
+
     def delete_song(self, pos):
         if isinstance(pos, bool) or not isinstance(pos, int) or pos < 0:
             return False

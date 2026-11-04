@@ -1,5 +1,4 @@
 import unittest
-from pathlib import Path
 from unittest.mock import patch
 
 import app
@@ -7,17 +6,22 @@ import app
 
 class ApplicationSupervisorTests(unittest.TestCase):
     @patch('app.subprocess.Popen')
-    def test_start_service_uses_project_path_and_active_python(self, popen):
+    def test_start_service_uses_project_module_and_active_python(self, popen):
         process = object()
         popen.return_value = process
-        service_path = Path(app.ROOT) / 'services' / 'music_queue' / 'main.py'
 
         result = app.start_service('music_queue', 'main.py')
 
         self.assertIs(result, process)
+        expected_options = {}
+        if app.os.name == 'nt':
+            expected_options['creationflags'] = (
+                app.subprocess.CREATE_NEW_PROCESS_GROUP
+            )
         popen.assert_called_once_with(
-            [app.sys.executable, str(service_path)],
+            [app.sys.executable, '-m', 'services.music_queue.main'],
             cwd=app.ROOT,
+            **expected_options,
         )
 
     @patch('app.time.sleep')
@@ -35,7 +39,10 @@ class ApplicationSupervisorTests(unittest.TestCase):
 
         self.assertEqual(app.main(), 1)
 
-        self.assertTrue(all(process.terminate.called for process in processes[1:]))
+        self.assertTrue(all(
+            process.send_signal.called or process.terminate.called
+            for process in processes[1:]
+        ))
 
     def test_missing_service_fails_explicitly(self):
         with self.assertRaises(FileNotFoundError):

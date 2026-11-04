@@ -28,6 +28,8 @@ class DatabaseTests(unittest.TestCase):
         self.assertEqual(self.db.pop_next_song(), 'Primeira')
         self.assertEqual(self.db.get_current_song(), 'Primeira')
         self.assertEqual(self.db.get_all_songs(), ['Segunda'])
+        self.db.clear_current_song()
+        self.assertIsNone(self.db.get_current_song())
         empty_db = DB(Path(self.temp_dir.name) / 'empty.sqlite3')
         self.assertIsNone(empty_db.pop_next_song())
 
